@@ -80,6 +80,21 @@ def initialize_db():
                     FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE CASCADE,
                     FOREIGN KEY (constituent_id) REFERENCES constituents(constituent_id) ON DELETE RESTRICT
                      );""")
+        
+#SEED DATA FOR POPULATING THE CATEGORIES TABLE
+
+        default_categories = [
+            ('Electronics',),
+            ('Documents & Cards',),
+            ('Keys & Keychains',),
+            ('Wallets & Bags',),
+            ('Books & Stationery',),
+            ('Clothing & Accessories',),
+            ('Personal Items (Tumblers, Umbrellas)',)
+        ]
+
+        cursor.executemany("""INSERT OR IGNORE INTO categories (category_name) VALUES (?);""", 
+                           default_categories)
         conn.commit()
         conn.close()
 
