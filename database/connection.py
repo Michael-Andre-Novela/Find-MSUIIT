@@ -45,7 +45,7 @@ def initialize_db():
                     category_id INTEGER,
                     FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
                      );""")
-
+        
 # FULLY DEPENDENT TABLES
 
         # Dependent Bridge Entity: Lost Table
@@ -79,6 +79,16 @@ def initialize_db():
                     PRIMARY KEY (item_id, constituent_id),
                     FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE CASCADE,
                     FOREIGN KEY (constituent_id) REFERENCES constituents(constituent_id) ON DELETE RESTRICT
+                     );""")
+        
+        # Creating the Activity_Log table
+        cursor.execute(""" CREATE TABLE IF NOT EXISTS activity_log(
+                    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    item_id INTEGER NOT NULL,
+                    details TEXT NOT NULL,
+                    actions TEXT NOT NULL,
+                    action_date TEXT NOT NULL,
+                    FOREIGN KEY (item_id) REFERENCES items(item_id) ON DELETE CASCADE
                      );""")
         
 #SEED DATA FOR POPULATING THE CATEGORIES TABLE
