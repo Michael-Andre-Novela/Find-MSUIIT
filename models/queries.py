@@ -1,7 +1,8 @@
 import sqlite3
 import datetime
+import os
 
-DB_PATH = "database/find_iit.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "database", "find_iit.db")
 
 def get_connection():
 	"""Helper function to get a database connection with foreign keys enabled."""
