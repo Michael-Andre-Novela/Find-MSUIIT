@@ -30,12 +30,12 @@ def add_constituent(id_number, name, contact_email, contact_phone=None):
 			print(f"Error: Constituent with ID {id_number} already exists.")
 			return None
 
-def _insert_item_core(cursor, name, description, item_type, category_id, priority_level, photo_id=None):
+def _insert_item_core(cursor, name, description, item_type, category_id, priority_level, photo_filepath=None):
 	"""PRIVATE HELPER: Handles inserting into the main items table and logging."""
 	cursor.execute("""
-		INSERT INTO items (name, description, type, priority_level, photo_id, category_id, status)
+		INSERT INTO items (name, description, type, priority_level, photo_filepath, category_id, status)
 		VALUES (?, ?, ?, ?, ?, ?, 'Active')
-	""", (name, description, item_type, priority_level, photo_id, category_id))
+	""", (name, description, item_type, priority_level, photo_filepath, category_id))
     
 	item_id = cursor.lastrowid
     
@@ -48,11 +48,11 @@ def _insert_item_core(cursor, name, description, item_type, category_id, priorit
     
 	return item_id
 
-def report_lost_item(name, description, category_id, priority_level, constituent_id, date_lost, location_lost, photo_id=None):
+def report_lost_item(name, description, category_id, priority_level, constituent_id, date_lost, location_lost, photo_filepath=None):
 	with get_connection() as conn:
 		cursor = conn.cursor()
 		try:
-			item_id = _insert_item_core(cursor, name, description, 'Lost', category_id, priority_level, photo_id)
+			item_id = _insert_item_core(cursor, name, description, 'Lost', category_id, priority_level, photo_filepath)
             
 			cursor.execute("""
 				INSERT INTO lost (item_id, constituent_id, date_lost, location_lost)
@@ -66,11 +66,11 @@ def report_lost_item(name, description, category_id, priority_level, constituent
 			print(f"Failed to report lost item: {e}")
 			return None
 
-def report_found_item(name, description, category_id, priority_level, constituent_id, date_found, location_found, photo_id=None):
+def report_found_item(name, description, category_id, priority_level, constituent_id, date_found, location_found, photo_filepath=None):
 	with get_connection() as conn:
 		cursor = conn.cursor()
 		try:
-			item_id = _insert_item_core(cursor, name, description, 'Found', category_id, priority_level, photo_id)
+			item_id = _insert_item_core(cursor, name, description, 'Found', category_id, priority_level, photo_filepath)
             
 			cursor.execute("""
 				INSERT INTO found (item_id, constituent_id, date_found, location_found)
@@ -92,8 +92,6 @@ def create_claim_request(item_id, constituent_id, claim_date):
 				INSERT INTO claim (item_id, constituent_id, claim_date, claim_status)
 				VALUES (?, ?, ?, 'Pending')
 			""", (item_id, constituent_id, claim_date))
-
-			cursor.execute("UPDATE items SET status = 'Pending Claim' WHERE item_id = ?", (item_id,))
 
 			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 			cursor.execute("""
@@ -210,8 +208,8 @@ def resolve_claim_request(item_id, constituent_id, administrative_action):
 			# Update claim status
 			cursor.execute("""
 				UPDATE claim SET claim_status = ? 
-				WHERE item_id = ? AND constituent_id = ?
-			""", (administrative_action, item_id, constituent_id))
+				WHERE item_id = ?
+			""", (administrative_action, item_id))
 
 			# Determine new item status based on the action
 			new_item_status = 'Claimed' if administrative_action == 'Approved' else 'Active'
@@ -305,7 +303,7 @@ def get_dashboard_statistics():
 		cursor.execute("SELECT COUNT(*) FROM items WHERE type='Found' AND status='Active'")
 		stats["active_found"] = cursor.fetchone()[0]
         
-		# Count Pending Claims
+		# Count Pending Claim Requests
 		cursor.execute("SELECT COUNT(*) FROM claim WHERE claim_status='Pending'")
 		stats["pending_claims"] = cursor.fetchone()[0]
         
