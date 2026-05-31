@@ -118,3 +118,12 @@ QPushButton#btnCancel {
 QPushButton#btnCancel:hover {
     background-color: #F0F0F0;
 }
+
+/* --- COMBOBOX DROPDOWN LIST --- */
+QComboBox QAbstractItemView {
+    color: #333333;          
+    background-color: #fde7a4;       
+    selection-background-color: #7A1C1C;
+    selection-color: #FFFFFF;         
+    border: 1px solid #CCCCCC;        
+}
