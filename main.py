@@ -53,15 +53,26 @@ def main():
     try:
         from views.items_view import ItemsView
         from views.claims_view import ClaimsView
-        from views.report_item_view import ReportItemView
         from views.constituents_view import ConstituentsView
         from views.activity_log_view import ActivityLogView
 
         window.add_view("items", ItemsView())
         window.add_view("claims", ClaimsView())
-        window.add_view("report", ReportItemView())
+        
         window.add_view("constituents", ConstituentsView())
         window.add_view("activity", ActivityLogView())
+
+    #---report item presenter and viewers---
+        from views.report_item_view import ReportItemView
+        from presenters.report_item_presenter import ReportItemPresenter
+
+        report_view = ReportItemView()
+        report_presenter = ReportItemPresenter(report_view)
+        report_presenter.start() # This fetches the categories for the dropdown
+
+        window.add_view("report", ReportItemView())
+        window.add_view("report", report_view)
+        
     except Exception:
         pass
 

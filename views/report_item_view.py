@@ -16,11 +16,11 @@ class ReportItemView(QWidget):
             QLabel {
                 font-size: 25px; 
                 font-weight: bold; 
-                margin-bottom: 10px; 
+                margin-bottom: 10px;
                 background-color: #b81417; 
                 color: white;            
                 padding: 10px; 
-                border-radius: 10px;
+                border-radius: 5px;
             }
         """)
         title.setAlignment(Qt.AlignCenter) 
