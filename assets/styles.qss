@@ -4,126 +4,138 @@
 
 /* --- GLOBAL WINDOW BACKGROUNDS --- */
 QMainWindow {
-    background-color: #F8F9FA;
+   background-color: #F9FAFB;
 }
 
 QStackedWidget {
-    background-color: #F8F9FA; /* Matches window background for smooth transitions */
+    background-color: #F9FAFB; /* Matches window background for smooth transitions */
 }
 
 /* --- LEFT SIDEBAR PANEL FRAME --- */
 QFrame#sidebarFrame {
-    background-color: #1A1A1A; /* Matte Charcoal Dark Background */
-    min-width: 230px;
-    max-width: 230px;
+    background-color: #111827; /* Matte Charcoal Dark Background */
+    min-width: 240px;
+    max-width: 240px;
     border: none;
-    padding-top: 20px;
+    padding-top: 24px;
 }
 
 /* Sidebar App Branding Text */
 QLabel#brandLabel {
     color: #FFFFFF;
     font-family: "Segoe UI", "Arial", sans-serif;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 800;
-    letter-spacing: 1px;
-    padding: 10px;
+    letter-spacing: 0.5px;
+    padding: 0px 0px 20px 24px;
 }
 
-/* --- VERTICAL NAVIGATION BUTTONS --- */
+/* --- VERTICAL NAVIGATION BUTTONS (Modern Pill Layout) --- */
 QPushButton#navButton {
     background-color: transparent;
-    color: #BBBBBB;
-    font-family: "Segoe UI", "Arial", sans-serif;
-    font-size: 13px;
-    font-weight: 600;
+    color: #9CA3AF; /* Muted gray text for unselected state */
+    font-family: "Segoe UI", "Inter", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
     text-align: left;
     padding: 12px 20px;
+    margin: 4px 12px; /* Margin creates a clean floating capsule effect */
     border: none;
-    border-radius: 0px;
+    border-radius: 8px; /* Rounded pill corners */
 }
 
 QPushButton#navButton:hover {
-    background-color: #2D2D2D; /* Light hover indicator shading */
-    color: #FFFFFF;
+    background-color: #1F2937; /* Darker ash contrast block */
+    color: #F9FAFB;
 }
 
 /* Active Highlight Filter (Applies when clicked / checked) */
 QPushButton#navButton:checked {
     background-color: #7A1C1C; /* MSU-IIT Maroon Selection Accent */
     color: #FFFFFF;
+    font-weight: 600;
     border-left: 4px solid #E0A96D; /* Small Gold Edge Accent Anchor Indicator */
 }
 
 /* --- ANALYTICAL METRIC CARD STRUCTURES (For Sammy's Views Later) --- */
 QFrame#statCard {
     background-color: #FFFFFF;
-    border: 1px solid #E5E5E5;
-    border-radius: 8px;
+    border: 1px solid #E5E7EB; /* Razor thin border line */
+    border-bottom: 2px solid #E5E7EB; /* Micro depth shadow look */
+    border-radius: 12px; /* Smooth rounded corners */
+    padding: 16px;
 }
 
 /* --- DATA TABLES (Recent Item Activity Logs) --- */
 QTableView, QTableWidget {
     background-color: #FFFFFF;
-    border: 1px solid #EAEAEA;
-    gridline-color: #F2F2F2;
+    border: 1px solid #E5E7EB;
+    gridline-color: #F3F4F6;
     font-family: "Segoe UI", sans-serif;
     font-size: 13px;
-    color: #333333;
+    color: #1F2937;
+    border-radius: 8px;
 }
 
 QHeaderView::section {
-    background-color: #F4F5F7;
-    padding: 8px;
+    background-color: #F9FAFB;
+    padding: 10px;
     border: none;
-    border-bottom: 2px solid #E5E5E5;
-    font-weight: bold;
-    color: #555555;
+    border-bottom: 2px solid #E5E7EB;
+    font-weight: 600;
+    color: #4B5563;
 }
 
-/* --- INPUT ELEMENTS (For Dev 3 Forms) --- */
+/* --- INPUT ELEMENTS & LOG VIEWS (For Form Fields and Log Monitors) --- */
 QLineEdit, QTextEdit, QComboBox {
     background-color: #FFFFFF;
-    border: 1px solid #CCCCCC;
-    border-radius: 4px;
-    padding: 6px;
-    color: #333333;
+    border: 1px solid #D1D5DB; /* Clean subtle gray line boundary */
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #1F2937;
 }
 
 QLineEdit:focus, QTextEdit:focus, QComboBox:focus {
-    border: 1px solid #7A1C1C; /* Maroon boundary focus highlight */
+    border: 1px solid #7A1C1C; /* Smooth maroon emphasis bridge focus */
 }
 
 /* --- INTERACTIVE ACTION BUTTONS --- */
-QPushButton#btnSubmit {
-    background-color: #7A1C1C; /* Brand Accent */
+QPushButton#btnSubmit, QPushButton#refreshButton {
+    background-color: #7A1C1C; /* Brand Crimson Accent */
     color: #FFFFFF;
-    font-weight: bold;
-    border-radius: 4px;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
     padding: 8px 16px;
 }
 
-QPushButton#btnSubmit:hover {
-    background-color: #5C1515;
+QPushButton#btnSubmit:hover, QPushButton#refreshButton:hover {
+    background-color: #5C1515; /* Deeper Maroon on Hover */
 }
 
 QPushButton#btnCancel {
     background-color: #FFFFFF;
-    color: #333333;
-    border: 1px solid #CCCCCC;
-    border-radius: 4px;
+    color: #374151;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
     padding: 8px 16px;
+    font-weight: 500;
 }
 
 QPushButton#btnCancel:hover {
-    background-color: #F0F0F0;
+    background-color: #F9FAFB;
+    border-color: #C4C6CC;
 }
 
 /* --- COMBOBOX DROPDOWN LIST --- */
 QComboBox QAbstractItemView {
-    color: #333333;          
-    background-color: #fde7a4;       
+    color: #374151;          
+    background-color: #FFFFFF; /* Changed from yellow to a clean, crisp white popover */
     selection-background-color: #7A1C1C;
     selection-color: #FFFFFF;         
-    border: 1px solid #CCCCCC;        
+    border: 1px solid #E5E7EB;        
+    padding: 4px;
 }
