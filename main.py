@@ -9,6 +9,7 @@ from models.queries import verify_database_integrity
 from views.main_window import MainWindow
 
 
+
 def _load_stylesheet(path: Path):
     try:
         with path.open("r", encoding="utf-8") as fh:
@@ -65,6 +66,7 @@ def main():
     #---report item presenter and viewers---
         from views.report_item_view import ReportItemView
         from presenters.report_item_presenter import ReportItemPresenter
+        
 
         report_view = ReportItemView()
         report_presenter = ReportItemPresenter(report_view)
@@ -73,6 +75,13 @@ def main():
         window.add_view("report", ReportItemView())
         window.add_view("report", report_view)
         
+
+        from presenters.constituents_presenter import ConstituentsPresenter
+
+        constituents_view = ConstituentsView()
+        constituents_presenter = ConstituentsPresenter(constituents_view)
+        window.add_view("constituents", constituents_view)
+
     except Exception:
         pass
 
