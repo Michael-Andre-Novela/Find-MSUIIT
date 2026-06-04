@@ -149,7 +149,8 @@ def log_db_activity(item_id: int, action: str, details: str) -> None:
     try:
         # Lazy import to avoid circular dependency at module load
         from models import queries
-        action_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # FIX: format matches DB CHECK constraint — YYYY-MM-DD HH:MM (no seconds)
+        action_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         with queries.get_connection() as conn:
             conn.execute("""
                 INSERT INTO activity_log (item_id, details, actions, action_date)
