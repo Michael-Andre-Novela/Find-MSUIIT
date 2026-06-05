@@ -133,7 +133,7 @@ QPushButton#btnCancel:hover {
 /* --- COMBOBOX DROPDOWN LIST --- */
 QComboBox QAbstractItemView {
     color: #374151;          
-    background-color: #FFFFFF; /* Changed from yellow to a clean, crisp white popover */
+    background-color: #fbffc2; /* Changed from yellow to a clean, crisp white popover */
     selection-background-color: #7A1C1C;
     selection-color: #FFFFFF;         
     border: 1px solid #E5E7EB;        
