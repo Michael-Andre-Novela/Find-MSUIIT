@@ -1,0 +1,5 @@
+[2026-05-26 21:31:01] [INFO    ] [FindMSUIIT.System] [SYSTEM] Logger Self-Test — Verifying all log levels.
+[2026-05-26 21:31:01] [INFO    ] [FindMSUIIT.Test] This is an INFO message.
+[2026-05-26 21:31:01] [DEBUG   ] [FindMSUIIT.Test] This is a DEBUG message — visible in log file only.
+[2026-05-26 21:31:01] [WARNING ] [FindMSUIIT.Test] This is a WARN message.
+[2026-05-26 21:31:01] [ERROR   ] [FindMSUIIT.Test] This is an ERROR message (no exception).

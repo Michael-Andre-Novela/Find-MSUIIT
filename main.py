@@ -35,45 +35,60 @@ def main():
     window.setWindowTitle("FindIIT")
     window.resize(1000, 640)
 
-    # --- Initialize core presenters and views
+    # ── Dashboard ─────────────────────────────────────────────────────
     try:
         from views.dashboard_view import DashboardView
         from presenters.dashboard_presenter import DashboardPresenter
 
         dashboard_view = DashboardView()
         dashboard_presenter = DashboardPresenter(dashboard_view)
-        # register and show dashboard
         window.add_view("dashboard", dashboard_view)
         dashboard_presenter.start()
         window.show_view("dashboard")
     except Exception:
-        # Non-fatal: if presenters are not ready, still show the main window empty
         pass
 
-    # Register lightweight placeholder views for toolbar navigation
+    # ── Report Item ───────────────────────────────────────────────────
     try:
-        from views.items_view import ItemsView
-        from views.claims_view import ClaimsView
-        from views.constituents_view import ConstituentsView
-        from views.activity_log_view import ActivityLogView
-
-        window.add_view("items", ItemsView())
-        window.add_view("claims", ClaimsView())
-        
-        window.add_view("constituents", ConstituentsView())
-        window.add_view("activity", ActivityLogView())
-
-    #---report item presenter and viewers---
         from views.report_item_view import ReportItemView
         from presenters.report_item_presenter import ReportItemPresenter
         
 
         report_view = ReportItemView()
         report_presenter = ReportItemPresenter(report_view)
-        report_presenter.start() # This fetches the categories for the dropdown
-
-        window.add_view("report", ReportItemView())
+        report_presenter.start()
         window.add_view("report", report_view)
+    except Exception:
+        pass
+
+    # ── Claims ────────────────────────────────────────────────────────
+    try:
+        from views.claims_view import ClaimsView
+        from presenters.claims_presenter import ClaimsPresenter
+
+        claims_view = ClaimsView()
+        claims_presenter = ClaimsPresenter(claims_view)
+        claims_presenter.start()
+        window.add_view("claims", claims_view)
+    except Exception:
+        pass
+
+    # ── Lightweight placeholder views ─────────────────────────────────
+    try:
+        from views.items_view import ItemsView
+        window.add_view("items", ItemsView())
+    except Exception:
+        pass
+
+    try:
+        from views.constituents_view import ConstituentsView
+        window.add_view("constituents", ConstituentsView())
+    except Exception:
+        pass
+
+    try:
+        from views.activity_log_view import ActivityLogView
+        window.add_view("activity", ActivityLogView())
         
 
         from presenters.constituents_presenter import ConstituentsPresenter
@@ -84,6 +99,8 @@ def main():
 
     except Exception:
         pass
+
+
 
     window.show()
     return app.exec()
