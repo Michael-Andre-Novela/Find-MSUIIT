@@ -3,3 +3,12 @@
 [2026-05-26 21:31:01] [DEBUG   ] [FindMSUIIT.Test] This is a DEBUG message — visible in log file only.
 [2026-05-26 21:31:01] [WARNING ] [FindMSUIIT.Test] This is a WARN message.
 [2026-05-26 21:31:01] [ERROR   ] [FindMSUIIT.Test] This is an ERROR message (no exception).
+[2026-06-05 20:52:22] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:03:30] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:07:21] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:08:38] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:13:16] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:16:12] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:24:14] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 22:19:28] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 22:20:22] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
