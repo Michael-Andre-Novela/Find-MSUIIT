@@ -60,16 +60,16 @@ class ActivityLogView(QWidget):
 
 
 # =========================================================================
-# PUBLIC INTERFACE METHODS (The channels your Presenter uses to control the UI)
+# PUBLIC INTERFACE METHODS (The channels that Presenter uses to control the UI)
 # =========================================================================
 
 
-	def show_logs(self, logs_entries: List[str]) -> None:
+	def show_logs(self, log_entries: List[str]) -> None:
 		"""Flushes the central area and appends raw timeline text strings."""
 		self.log_display.clear()
 		
-		if not logs_entries:
+		if not log_entries:
 			self.log_display.setPlaceholderText("No system log records match the current criteria filter.")
 			return
-		for entry in logs_entries:
+		for entry in log_entries:
 			self.log_display.append(entry)

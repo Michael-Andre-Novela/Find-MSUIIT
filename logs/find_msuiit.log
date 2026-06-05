@@ -3,3 +3,5 @@
 [2026-05-26 21:31:01] [DEBUG   ] [FindMSUIIT.Test] This is a DEBUG message — visible in log file only.
 [2026-05-26 21:31:01] [WARNING ] [FindMSUIIT.Test] This is a WARN message.
 [2026-05-26 21:31:01] [ERROR   ] [FindMSUIIT.Test] This is an ERROR message (no exception).
+[2026-06-05 03:53:07] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 03:53:11] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
