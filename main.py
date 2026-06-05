@@ -10,6 +10,7 @@ from views.main_window import MainWindow
 
 
 
+
 def _load_stylesheet(path: Path):
     try:
         with path.open("r", encoding="utf-8") as fh:
@@ -76,7 +77,12 @@ def main():
     # ── Lightweight placeholder views ─────────────────────────────────
     try:
         from views.items_view import ItemsView
-        window.add_view("items", ItemsView())
+        from presenters.items_presenter import ItemsPresenter
+
+        items_view = ItemsView()
+        items_presenter = ItemsPresenter(items_view)
+        items_presenter.start() # This loads the table data!
+        window.add_view("items", items_view)
     except Exception:
         pass
 
