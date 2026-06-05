@@ -40,7 +40,7 @@ def _insert_item_core(cursor, name, description, item_type, category_id, priorit
 	item_id = cursor.lastrowid
     
 	# Log the creation
-	action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+	action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 	cursor.execute("""
 		INSERT INTO activity_log (item_id, details, actions, action_date)
 		VALUES (?, ?, ?, ?)
@@ -93,7 +93,7 @@ def create_claim_request(item_id, constituent_id, claim_date):
 				VALUES (?, ?, ?, 'Pending')
 			""", (item_id, constituent_id, claim_date))
 
-			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 			cursor.execute("""
 				INSERT INTO activity_log (item_id, details, actions, action_date)
 				VALUES (?, ?, ?, ?)
@@ -187,7 +187,7 @@ def update_item_status(item_id, current_status):
 		try:
 			cursor.execute("UPDATE items SET status = ? WHERE item_id = ?", (current_status, item_id))
             
-			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 			cursor.execute("""
 				INSERT INTO activity_log (item_id, details, actions, action_date)
 				VALUES (?, ?, ?, ?)
@@ -216,7 +216,7 @@ def resolve_claim_request(item_id, constituent_id, administrative_action):
 			cursor.execute("UPDATE items SET status = ? WHERE item_id = ?", (new_item_status, item_id))
 
 			# Log the resolution
-			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 			cursor.execute("""
 				INSERT INTO activity_log (item_id, details, actions, action_date)
 				VALUES (?, ?, ?, ?)

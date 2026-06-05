@@ -9,6 +9,8 @@ from models.queries import verify_database_integrity
 from views.main_window import MainWindow
 
 
+
+
 def _load_stylesheet(path: Path):
     try:
         with path.open("r", encoding="utf-8") as fh:
@@ -51,6 +53,7 @@ def main():
     try:
         from views.report_item_view import ReportItemView
         from presenters.report_item_presenter import ReportItemPresenter
+        
 
         report_view = ReportItemView()
         report_presenter = ReportItemPresenter(report_view)
@@ -74,7 +77,12 @@ def main():
     # ── Lightweight placeholder views ─────────────────────────────────
     try:
         from views.items_view import ItemsView
-        window.add_view("items", ItemsView())
+        from presenters.items_presenter import ItemsPresenter
+
+        items_view = ItemsView()
+        items_presenter = ItemsPresenter(items_view)
+        items_presenter.start() # This loads the table data!
+        window.add_view("items", items_view)
     except Exception:
         pass
 
@@ -87,8 +95,18 @@ def main():
     try:
         from views.activity_log_view import ActivityLogView
         window.add_view("activity", ActivityLogView())
+        
+
+        from presenters.constituents_presenter import ConstituentsPresenter
+
+        constituents_view = ConstituentsView()
+        constituents_presenter = ConstituentsPresenter(constituents_view)
+        window.add_view("constituents", constituents_view)
+
     except Exception:
         pass
+
+
 
     window.show()
     return app.exec()
