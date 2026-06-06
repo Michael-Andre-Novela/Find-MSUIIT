@@ -62,11 +62,11 @@ class ItemsPresenter:
         new_status = self.view.status_combo.currentText()
         
         if item_id and new_status:
-            success = self.model.update_item_status(item_id, new_status)
+            success, msg = self.model.update_item_status(item_id, new_status)
             if success:
                 self.view.show_message("Success", f"Item {item_id} successfully marked as {new_status}.")
                 # Refresh the table immediately. 
                 # Since the item is no longer 'Active', it will disappear from the list!
                 self.load_items() 
             else:
-                self.view.show_message("Error", "Failed to update item status in the database.")
+                self.view.show_message("Error", msg or "Failed to update item status in the database.")

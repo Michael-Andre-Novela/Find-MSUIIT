@@ -25,7 +25,16 @@ class ReportItemPresenter:
             self.view.show_message("Validation Error", "Please fill in Name, Reporter ID, Location, and Date.")
             return
 
-        # 2. Verify Constituent exists
+        # 2. Strict Reporter ID Regular Expression Check
+        import re
+        pattern = re.compile(r"^\d{4}-\d{4}$")
+        if not pattern.match(data["reporter_id"]):
+            self.view.show_message(
+                "Validation Error", 
+                "Reporter ID must follow the format YYYY-NNNN (e.g., 2024-1234)."
+            )
+            return
+        # 3. Verify Constituent exists in the database
         constituent = self.model.get_constituent_by_school_id(data["reporter_id"])
         if not constituent:
             self.view.show_message(
@@ -36,23 +45,23 @@ class ReportItemPresenter:
             
         c_id = constituent["constituent_id"]
         
-        # 3. Submit to Database
+        # 4. Submit to Database
         if data["type"] == "Lost":
-            result = self.model.report_lost_item(
+            success, payload = self.model.report_lost_item(
                 name=data["name"], description=data["description"], 
                 category_id=data["category_id"], priority_level="Low", 
                 constituent_id=c_id, date_lost=data["date"], location_lost=data["location"]
             )
         else:
-            result = self.model.report_found_item(
+            success, payload = self.model.report_found_item(
                 name=data["name"], description=data["description"], 
                 category_id=data["category_id"], priority_level="Low", 
                 constituent_id=c_id, date_found=data["date"], location_found=data["location"]
             )
-            
-        # 4. Handle Result
-        if result:
-            self.view.show_message("Success", f"Item successfully reported!\nSystem Item ID: {result}")
+
+        # 5. Handle Result
+        if success:
+            self.view.show_message("Success", f"Item successfully reported!\nSystem Item ID: {payload}")
             self.view.clear_form()
         else:
-            self.view.show_message("Database Error", "Failed to report item to the database.")
+            self.view.show_message("Error", payload or "Failed to report item to the database.")

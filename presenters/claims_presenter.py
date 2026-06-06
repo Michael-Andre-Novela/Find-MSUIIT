@@ -52,18 +52,18 @@ class ClaimsPresenter:
             self.view.show_message("Error", f"Constituent '{id_number}' not found in the database.")
             return
 
-        result = self.model.resolve_claim_request(
+        success, msg = self.model.resolve_claim_request(
             item_id=item_id,
             constituent_id=constituent["constituent_id"],
             administrative_action="Approved"
         )
 
-        if result:
+        if success:
             log.info(f"Claim for item_id={item_id} approved.")
             self.view.show_message("Success", f"Claim for Item ID {item_id} has been approved.\nItem status set to 'Claimed'.")
             self.load_claims()
         else:
-            self.view.show_message("Database Error", "Failed to approve the claim.")
+            self.view.show_message("Error", msg or "Failed to approve the claim.")
 
     def handle_reject(self):
         """Rejects the selected pending claim."""
@@ -77,15 +77,15 @@ class ClaimsPresenter:
             self.view.show_message("Error", f"Constituent '{id_number}' not found in the database.")
             return
 
-        result = self.model.resolve_claim_request(
+        success, msg = self.model.resolve_claim_request(
             item_id=item_id,
             constituent_id=constituent["constituent_id"],
             administrative_action="Rejected"
         )
 
-        if result:
+        if success:
             log.info(f"Claim for item_id={item_id} rejected.")
             self.view.show_message("Success", f"Claim for Item ID {item_id} has been rejected.\nItem remains 'Active'.")
             self.load_claims()
         else:
-            self.view.show_message("Database Error", "Failed to reject the claim.")
+            self.view.show_message("Error", msg or "Failed to reject the claim.")

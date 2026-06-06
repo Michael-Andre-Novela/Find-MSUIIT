@@ -1,8 +1,12 @@
 import sqlite3
 import datetime
 import os
+import re
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "database", "find_iit.db")
+
+_ID_NUMBER_PATTERN = re.compile(r"^\d{4}-\d{4}$")
+_EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 def get_connection():
 	"""Helper function to get a database connection with foreign keys enabled."""
@@ -17,6 +21,16 @@ def get_connection():
 # =====================================================================
 
 def add_constituent(id_number, name, contact_email, contact_phone=None):
+	if not _ID_NUMBER_PATTERN.match(id_number):
+		msg = f"Invalid id_number format: '{id_number}'. Expected YYYY-NNNN."
+		print(msg)
+		return None
+
+	if not _EMAIL_PATTERN.match(contact_email):
+		msg = f"Invalid contact_email format: '{contact_email}'. Expected a valid email address."
+		print(msg)
+		return None
+
 	with get_connection() as conn:
 		cursor = conn.cursor()
 		try:
@@ -49,50 +63,107 @@ def _insert_item_core(cursor, name, description, item_type, category_id, priorit
 	return item_id
 
 def report_lost_item(name, description, category_id, priority_level, constituent_id, date_lost, location_lost, photo_filepath=None):
+	# Validate date format YYYY-MM-DD
+	try:
+		datetime.datetime.strptime(date_lost, "%Y-%m-%d")
+	except Exception:
+		msg = f"Invalid date_lost format: '{date_lost}'. Expected YYYY-MM-DD."
+		print(msg)
+		return False, msg
+
 	with get_connection() as conn:
 		cursor = conn.cursor()
 		try:
 			item_id = _insert_item_core(cursor, name, description, 'Lost', category_id, priority_level, photo_filepath)
-            
+
 			cursor.execute("""
 				INSERT INTO lost (item_id, constituent_id, date_lost, location_lost)
 				VALUES (?, ?, ?, ?)
 			""", (item_id, constituent_id, date_lost, location_lost))
-            
+
 			conn.commit()
-			return item_id
+			return True, item_id
 		except sqlite3.Error as e:
 			conn.rollback()
-			print(f"Failed to report lost item: {e}")
-			return None
+			msg = f"Failed to report lost item: {e}"
+			print(msg)
+			return False, msg
 
 def report_found_item(name, description, category_id, priority_level, constituent_id, date_found, location_found, photo_filepath=None):
+	# Validate date format YYYY-MM-DD
+	try:
+		datetime.datetime.strptime(date_found, "%Y-%m-%d")
+	except Exception:
+		msg = f"Invalid date_found format: '{date_found}'. Expected YYYY-MM-DD."
+		print(msg)
+		return False, msg
+
 	with get_connection() as conn:
 		cursor = conn.cursor()
 		try:
 			item_id = _insert_item_core(cursor, name, description, 'Found', category_id, priority_level, photo_filepath)
-            
+
 			cursor.execute("""
 				INSERT INTO found (item_id, constituent_id, date_found, location_found)
 				VALUES (?, ?, ?, ?)
 			""", (item_id, constituent_id, date_found, location_found))
-            
+
 			conn.commit()
-			return item_id
+			return True, item_id
 		except sqlite3.Error as e:
 			conn.rollback()
-			print(f"Failed to report found item: {e}")
-			return None
+			msg = f"Failed to report found item: {e}"
+			print(msg)
+			return False, msg
 
 def create_claim_request(item_id, constituent_id, claim_date):
+	"""Create a claim request with validation.
+
+	Performs these checks before inserting:
+	- item exists
+	- item.status is 'Active'
+	- no existing claim for the item
+
+	Returns the `item_id` on success, or `None` on validation or DB failure.
+	"""
+	# Validate claim_date format YYYY-MM-DD before DB operations
+	try:
+		datetime.datetime.strptime(claim_date, "%Y-%m-%d")
+	except Exception:
+		msg = f"Invalid claim_date format: '{claim_date}'. Expected YYYY-MM-DD."
+		print(msg)
+		return False, msg
+
 	with get_connection() as conn:
 		cursor = conn.cursor()
 		try:
+			# Verify item exists and is claimable
+			cursor.execute("SELECT type, status FROM items WHERE item_id = ?", (item_id,))
+			row = cursor.fetchone()
+			if not row:
+				msg = f"Failed to create claim request: item {item_id} not found."
+				print(msg)
+				return False, msg
+			# Only items with status 'Active' are claimable
+			if row["status"] != "Active":
+				msg = f"Failed to create claim request: item {item_id} not claimable (status={row['status']})."
+				print(msg)
+				return False, msg
+
+			# Prevent duplicate claims (item_id is PK in claim)
+			cursor.execute("SELECT claim_status FROM claim WHERE item_id = ?", (item_id,))
+			if cursor.fetchone():
+				msg = f"Failed to create claim request: claim already exists for item {item_id}."
+				print(msg)
+				return False, msg
+
+			# Insert the claim
 			cursor.execute("""
 				INSERT INTO claim (item_id, constituent_id, claim_date, claim_status)
 				VALUES (?, ?, ?, 'Pending')
 			""", (item_id, constituent_id, claim_date))
 
+			# Log the request
 			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 			cursor.execute("""
 				INSERT INTO activity_log (item_id, details, actions, action_date)
@@ -100,11 +171,17 @@ def create_claim_request(item_id, constituent_id, claim_date):
 			""", (item_id, f"Constituent ID {constituent_id} requested a claim.", "Claim Requested", action_date))
 
 			conn.commit()
-			return True
+			return True, item_id
+		except sqlite3.IntegrityError as e:
+			conn.rollback()
+			msg = f"Failed to create claim request (integrity): {e}"
+			print(msg)
+			return False, msg
 		except sqlite3.Error as e:
 			conn.rollback()
-			print(f"Failed to create claim request: {e}")
-			return False
+			msg = f"Failed to create claim request: {e}"
+			print(msg)
+			return False, msg
 
 # =====================================================================
 # 2. READ OPERATIONS (Fetching Data)
@@ -140,6 +217,13 @@ def get_item_details(item_id, item_type):
 	with get_connection() as conn:
 		cursor = conn.cursor()
         
+		# Be explicit about the type; if caller passes an unexpected value,
+		# attempt to detect the stored type from the items table first.
+		if item_type not in ('Lost', 'Found'):
+			cursor.execute("SELECT type FROM items WHERE item_id = ?", (item_id,))
+			row_type = cursor.fetchone()
+			item_type = row_type["type"] if row_type else item_type
+
 		if item_type == 'Lost':
 			query = """
 				SELECT i.*, c.category_name, l.date_lost as event_date, l.location_lost as event_location,
@@ -185,31 +269,59 @@ def update_item_status(item_id, current_status):
 	with get_connection() as conn:
 		cursor = conn.cursor()
 		try:
+			# Validate requested status transitions
+			allowed_statuses = ('Active', 'Claimed', 'Archived')
+			if current_status not in allowed_statuses:
+				msg = f"Status update failed: '{current_status}' is not a valid status."
+				print(msg)
+				return False, msg
+
+			# If setting to 'Claimed', ensure there is an approved claim for this item
+			if current_status == 'Claimed':
+				cursor.execute("SELECT 1 FROM claim WHERE item_id = ? AND claim_status = 'Approved'", (item_id,))
+				if not cursor.fetchone():
+					msg = f"Status update failed: no approved claim exists for item {item_id}."
+					print(msg)
+					return False, msg
+
 			cursor.execute("UPDATE items SET status = ? WHERE item_id = ?", (current_status, item_id))
-            
+			
 			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 			cursor.execute("""
 				INSERT INTO activity_log (item_id, details, actions, action_date)
 				VALUES (?, ?, ?, ?)
 			""", (item_id, f"Admin updated status.", f"Status -> {current_status}", action_date))
-            
+
 			conn.commit()
-			return True
+			return True, None
 		except sqlite3.Error as e:
 			conn.rollback()
-			print(f"Status update failed: {e}")
-			return False
+			msg = f"Status update failed: {e}"
+			print(msg)
+			return False, msg
 
 def resolve_claim_request(item_id, constituent_id, administrative_action):
 	"""administrative_action should be 'Approved' or 'Rejected'"""
+	if administrative_action not in ("Approved", "Rejected"):
+		msg = f"Invalid administrative_action: {administrative_action}"
+		print(msg)
+		return False, msg
+
 	with get_connection() as conn:
 		cursor = conn.cursor()
 		try:
-			# Update claim status
+			# Update claim status only for the matching claimant
 			cursor.execute("""
 				UPDATE claim SET claim_status = ? 
-				WHERE item_id = ?
-			""", (administrative_action, item_id))
+				WHERE item_id = ? AND constituent_id = ?
+			""", (administrative_action, item_id, constituent_id))
+
+			# Ensure a row was actually updated
+			if cursor.rowcount == 0:
+				conn.rollback()
+				msg = f"Claim resolution failed: no matching claim for item {item_id} and constituent {constituent_id}."
+				print(msg)
+				return False, msg
 
 			# Determine new item status based on the action
 			new_item_status = 'Claimed' if administrative_action == 'Approved' else 'Active'
@@ -223,11 +335,12 @@ def resolve_claim_request(item_id, constituent_id, administrative_action):
 			""", (item_id, f"Claim by constituent {constituent_id} was {administrative_action}.", f"Claim {administrative_action}", action_date))
 
 			conn.commit()
-			return True
+			return True, None
 		except sqlite3.Error as e:
 			conn.rollback()
-			print(f"Claim resolution failed: {e}")
-			return False
+			msg = f"Claim resolution failed: {e}"
+			print(msg)
+			return False, msg
 
 # =====================================================================
 # 4. DELETE OPERATIONS (Removing Data)
