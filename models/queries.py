@@ -8,13 +8,45 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "database", "
 _ID_NUMBER_PATTERN = re.compile(r"^\d{4}-\d{4}$")
 _EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
+# Create a simple global flag so the check only runs ONCE per app launch, not on every query
+_PLACEHOLDER_CHECKED = False
+
 def get_connection():
-	"""Helper function to get a database connection with foreign keys enabled."""
-	conn = sqlite3.connect(DB_PATH)
-	conn.execute("PRAGMA foreign_keys = ON;")
-	# Return rows as dictionaries for easier data handling in Python
-	conn.row_factory = sqlite3.Row 
-	return conn
+    """Helper function to get a database connection with foreign keys enabled."""
+    global _PLACEHOLDER_CHECKED
+    
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA foreign_keys = ON;")
+    conn.row_factory = sqlite3.Row 
+    
+    if not _PLACEHOLDER_CHECKED:
+        _PLACEHOLDER_CHECKED = True
+        try:
+            conn.execute("PRAGMA foreign_keys = OFF;")
+            cursor = conn.cursor()
+            
+            # 1. Seed fallback category so item 0 doesn't trigger foreign key errors
+            cursor.execute("SELECT 1 FROM categories WHERE category_id = 1")
+            if not cursor.fetchone():
+                cursor.execute("""
+                    INSERT INTO categories (category_id, category_name, description)
+                    VALUES (1, 'System Unassigned', 'Internal system placeholder category')
+                """)
+
+            # 2. Seed the system log placeholder item
+            cursor.execute("SELECT 1 FROM items WHERE item_id = 0")
+            if not cursor.fetchone():
+                cursor.execute("""
+                    INSERT INTO items (item_id, name, description, type, priority_level, category_id, status)
+                    VALUES (0, 'System Log Placeholder', 'Reserved for tracking non-item logs.', 'Lost', 'Low', 1, 'Archived')
+                """)
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"CRITICAL Warning during placeholder initialization: {e}")
+        finally:
+            conn.execute("PRAGMA foreign_keys = ON;")
+    
+    return conn
 
 # =====================================================================
 # 1. CREATE OPERATIONS (Inserting New Data)
@@ -39,7 +71,16 @@ def add_constituent(id_number, name, contact_email, contact_phone=None):
 				VALUES (?, ?, ?, ?)
 			""", (id_number, name, contact_email, contact_phone))
 			conn.commit()
-			return cursor.lastrowid
+
+			new_id = cursor.lastrowid
+
+			add_activity_log(
+				item_id=0, 
+				details=f"Constituent Registered: {name} (ID: {id_number})", 
+				actions="Created"
+			)
+			return new_id
+		
 		except sqlite3.IntegrityError:
 			print(f"Error: Constituent with ID {id_number} already exists.")
 			return None
@@ -82,7 +123,14 @@ def report_lost_item(name, description, category_id, priority_level, constituent
 			""", (item_id, constituent_id, date_lost, location_lost))
 
 			conn.commit()
+
+			add_activity_log(
+					item_id=item_id,
+					details=f"Item Registered: {name} [ID: {item_id}]", 
+					actions="Created"
+				)
 			return True, item_id
+		
 		except sqlite3.Error as e:
 			conn.rollback()
 			msg = f"Failed to report lost item: {e}"
@@ -109,6 +157,12 @@ def report_found_item(name, description, category_id, priority_level, constituen
 			""", (item_id, constituent_id, date_found, location_found))
 
 			conn.commit()
+
+			add_activity_log(
+					item_id=item_id, 
+					details=f"Item Registered: {name} [ID: {item_id}]", 
+					actions="Created"
+			)
 			return True, item_id
 		except sqlite3.Error as e:
 			conn.rollback()
@@ -260,46 +314,72 @@ def get_pending_claims():
 			WHERE cl.claim_status = 'Pending'
 		""")
 		return [dict(row) for row in cursor.fetchall()]
+	
+def get_all_activity_logs():
+    """Fetches full log histories providing both standard column names and mapped presenter keys."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT 
+                log_id,
+                item_id,
+                action_date, 
+                action_date as timestamp, 
+                actions, 
+                actions as type, 
+                details, 
+                details as message 
+            FROM activity_log 
+            ORDER BY log_id DESC
+        """)
+        return [dict(row) for row in cursor.fetchall()]
 
 # =====================================================================
 # 3. UPDATE OPERATIONS (Modifying Data)
 # =====================================================================
 
 def update_item_status(item_id, current_status):
-	with get_connection() as conn:
-		cursor = conn.cursor()
-		try:
-			# Validate requested status transitions
-			allowed_statuses = ('Active', 'Claimed', 'Archived')
-			if current_status not in allowed_statuses:
-				msg = f"Status update failed: '{current_status}' is not a valid status."
-				print(msg)
-				return False, msg
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            # 1. Validate requested status transitions
+            allowed_statuses = ('Active', 'Claimed', 'Archived')
+            if current_status not in allowed_statuses:
+                msg = f"Status update failed: '{current_status}' is not a valid status."
+                print(msg)
+                return False, msg
 
-			# If setting to 'Claimed', ensure there is an approved claim for this item
-			if current_status == 'Claimed':
-				cursor.execute("SELECT 1 FROM claim WHERE item_id = ? AND claim_status = 'Approved'", (item_id,))
-				if not cursor.fetchone():
-					msg = f"Status update failed: no approved claim exists for item {item_id}."
-					print(msg)
-					return False, msg
+            # 2. If setting to 'Claimed', ensure there is an approved claim for this item
+            if current_status == 'Claimed':
+                cursor.execute("SELECT 1 FROM claim WHERE item_id = ? AND claim_status = 'Approved'", (item_id,))
+                if not cursor.fetchone():
+                    msg = f"Status update failed: no approved claim exists for item {item_id}."
+                    print(msg)
+                    return False, msg
 
-			cursor.execute("UPDATE items SET status = ? WHERE item_id = ?", (current_status, item_id))
-			
-			action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-			cursor.execute("""
-				INSERT INTO activity_log (item_id, details, actions, action_date)
-				VALUES (?, ?, ?, ?)
-			""", (item_id, f"Admin updated status.", f"Status -> {current_status}", action_date))
+            # 3. Perform the update operation
+            cursor.execute("UPDATE items SET status = ? WHERE item_id = ?", (current_status, item_id))
+            
+            # 4. Write to activity log (using our unified database helper column naming format)
+            action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            cursor.execute("""
+                INSERT INTO activity_log (item_id, details, actions, action_date)
+                VALUES (?, ?, ?, ?)
+            """, (item_id, f"Item ID {item_id} status updated to '{current_status}'", f"Status -> {current_status}", action_date))
 
-			conn.commit()
-			return True, None
-		except sqlite3.Error as e:
-			conn.rollback()
-			msg = f"Status update failed: {e}"
-			print(msg)
-			return False, msg
+            # 5. Commit everything together safely inside a single transaction save block
+            conn.commit()
+            
+            msg = f"Item {item_id} successfully marked as {current_status}."
+            print(msg)
+            return True, msg
 
+        except sqlite3.Error as e:
+            conn.rollback()
+            msg = f"Status update failed: {e}"
+            print(msg)
+            return False, msg
+		
 def resolve_claim_request(item_id, constituent_id, administrative_action):
 	"""administrative_action should be 'Approved' or 'Rejected'"""
 	if administrative_action not in ("Approved", "Rejected"):
@@ -459,4 +539,21 @@ def optimize_database():
 			return True
 		except sqlite3.Error as e:
 			print(f"Failed to optimize database: {e}")
+
 			return False
+def add_activity_log(item_id: int, details: str, actions: str) -> bool:
+    """Helper function to cleanly insert tracking events into the activity log."""
+    action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO activity_log (item_id, details, actions, action_date)
+                VALUES (?, ?, ?, ?)
+            """, (item_id, details, actions, action_date))
+            conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Database logging error: {e}")
+            return False
+		

@@ -3,14 +3,23 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+try:
+    from models import queries
+except ImportError:
+    # Handle absolute/relative path import flexibility depending on main run environment
+    try:
+        from database import queries
+    except ImportError:
+        queries = None
+
 class ActivityLogPresenter:
     def __init__(self, view: Any, model: Any = None):
         self.view = view
-        self.model = model
+        self.model = model or queries  # Use the queries module as a default model if not provided
         
         # Connect signals from the UI View to methods in this Presenter
         self.view.btn_refresh.clicked.connect(self.load_logs)
-        self.view.combo_filter.currentTextChanged.connect(self.load_logs)
+        self.view.combo_filter.currentTextChanged.connect(self.load_logs)   
 
     def start(self) -> None:
         """Triggered automatically by main_window when this panel comes into focus."""
@@ -27,22 +36,26 @@ class ActivityLogPresenter:
         # 3. Filter and process the data based on selection
         formatted_list = []
         for log in raw_logs:
-            log_type = log.get("type", "")
+            if not log:
+                continue
+
+            details = log.get("details") or log.get("message") or ""
+            action_type = str(log.get("actions") or log.get("type") or "").lower()
+            timestamp = log.get("action_date") or log.get("timestamp") or "0000-00-00 00:00"
             
-            # Map dropdown string selections to our data filters
-            if current_filter == "Items Registration" and log_type != "item":
-                continue
-            elif current_filter == "Claims Processed" and log_type != "claim":
-                continue
-            elif current_filter == "System Alerts" and log_type != "system":
-                continue
+            # Match the combo box filters to the action text attributes
+            if current_filter == "Items Registration":
+                if not any(x in action_type for x in ["created", "registered"]):
+                    continue
+            elif current_filter == "Claims Processed":
+                if not any(x in action_type for x in ["claim"]):
+                    continue
+            elif current_filter == "System Alerts":
+                if not any(x in action_type for x in ["system", "alert", "constituent"]):
+                    continue
+            #If current_filter is "All Activity", it cleanly falls through and passes everyone!
                 
-            # Build a beautifully structured timeline text row
-            timestamp = log.get("timestamp", "0000-00-00 00:00:00")
-            message = log.get("message", "")
-            user = log.get("user", "System")
-            
-            formatted_row = f"[{timestamp}] {message} (By: {user})"
+            formatted_row = f"[{timestamp}] {details}"
             formatted_list.append(formatted_row)
             
         # 4. Flush and load the text strings directly to the view layout box!
@@ -52,10 +65,13 @@ class ActivityLogPresenter:
         """Safely fetch real records, using mock events if the database isn't hooked up yet."""
         if self.model and hasattr(self.model, "get_all_activity_logs"):
             try:
-                return self.model.get_all_activity_logs()
+                db_logs = self.model.get_all_activity_logs()
+                if db_logs:
+                    # Convert SQLite Row objects explicitly into standard dictionaries
+                    return [dict(row) for row in db_logs]
             except Exception as e:
                 logger.error(f"Failed to query database logs: {e}")
-                return []
+
                 
         # Mock database rows perfectly matching the design we chose
         return [
