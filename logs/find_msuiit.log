@@ -51,11 +51,17 @@
 [2026-06-08 04:21:37] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
 [2026-06-08 04:30:09] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d13bec605cee1955bb59fba6454ad28144ac2e2b
 [2026-06-08 08:03:27] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
 [2026-06-08 08:27:50] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
 [2026-06-08 08:33:19] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
 [2026-06-08 08:34:22] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
 [2026-06-08 08:35:15] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+<<<<<<< HEAD
 =======
 [2026-06-08 18:46:14] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
 >>>>>>> 83eb6354e669125be1925bbab3521acd98cd6d9b
+=======
+>>>>>>> d13bec605cee1955bb59fba6454ad28144ac2e2b
