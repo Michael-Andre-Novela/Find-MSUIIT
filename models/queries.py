@@ -516,3 +516,113 @@ def add_activity_log(item_id: int, details: str, actions: str) -> bool:
             print(f"Database logging error: {e}")
             return False
 		
+		
+# =====================================================================
+# CONSTITUENT MANAGEMENT OPERATIONS
+# =====================================================================
+
+def search_constituents(search_term=""):
+    """Fetches constituents, optionally filtering by name or ID."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        query = """
+            SELECT constituent_id, id_number, name, contact_email, contact_phone 
+            FROM constituents 
+            WHERE name LIKE ? OR id_number LIKE ? 
+            ORDER BY name ASC
+        """
+        cursor.execute(query, (f'%{search_term}%', f'%{search_term}%'))
+        return [dict(row) for row in cursor.fetchall()]
+
+def update_constituent_info(constituent_id, name, email, phone):
+    """Updates an existing constituent's contact information."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                UPDATE constituents 
+                SET name = ?, contact_email = ?, contact_phone = ?
+                WHERE constituent_id = ?
+            """, (name, email, phone, constituent_id))
+            conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Failed to update constituent: {e}")
+            return False
+
+def delete_claim_request(item_id, constituent_id):
+    """Deletes a pending claim request and logs the rejection."""
+    import datetime # Ensure this is available
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            # 1. Remove the claim entirely
+            cursor.execute("DELETE FROM claim WHERE item_id = ?", (item_id,))
+
+            # 2. Log the rejection (using the exact time format your database requires)
+            action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            cursor.execute("""
+                INSERT INTO activity_log (item_id, details, actions, action_date)
+                VALUES (?, ?, ?, ?)
+            """, (item_id, f"Admin rejected and deleted claim by constituent ID {constituent_id}.", "Claim Rejected", action_date))
+
+            conn.commit()
+            return True
+        except sqlite3.Error as e:
+            conn.rollback()
+            print(f"Failed to delete claim: {e}")
+            return False
+		
+def remove_constituent_record(constituent_id):
+    """Attempts to remove a constituent. Blocked if tied to active items/claims."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM constituents WHERE constituent_id = ?", (constituent_id,))
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            # This triggers because of the ON DELETE RESTRICT constraint
+            return "restricted"
+        except sqlite3.Error as e:
+            print(f"Failed to delete constituent: {e}")
+            return False
+		
+def delete_item_record(item_id):
+    """Attempts to completely delete an item from the database."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM items WHERE item_id = ?", (item_id,))
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            # Triggers if the database blocks the deletion (e.g., tied to a claim)
+            return "restricted"
+        except sqlite3.Error as e:
+            print(f"Failed to delete item: {e}")
+            return False
+		
+def get_item_by_id(item_id):
+    """Fetches all details of a specific item to pre-fill the edit form."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM items WHERE item_id = ?", (item_id,))
+        row = cursor.fetchone()
+        return dict(row) if row else None
+
+def update_item_details(item_id, name, description, item_type, category_id, location):
+    """Updates the physical details of an item."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                UPDATE items 
+                SET name = ?, description = ?, type = ?, category_id = ?, location = ?
+                WHERE item_id = ?
+            """, (name, description, item_type, category_id, location, item_id))
+            conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Failed to update item details: {e}")
+            return False
