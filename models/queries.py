@@ -8,46 +8,13 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "database", "
 _ID_NUMBER_PATTERN = re.compile(r"^\d{4}-\d{4}$")
 _EMAIL_PATTERN = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
-# Create a simple global flag so the check only runs ONCE per app launch, not on every query
-_PLACEHOLDER_CHECKED = False
-
 def get_connection():
-    """Helper function to get a database connection with foreign keys enabled."""
-    global _PLACEHOLDER_CHECKED
+	"""Helper function to get a database connection with foreign keys enabled.""" 
+	conn = sqlite3.connect(DB_PATH)
+	conn.execute("PRAGMA foreign_keys = ON;")
+	conn.row_factory = sqlite3.Row
+	return conn   
     
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("PRAGMA foreign_keys = ON;")
-    conn.row_factory = sqlite3.Row 
-    
-    if not _PLACEHOLDER_CHECKED:
-        _PLACEHOLDER_CHECKED = True
-        try:
-            conn.execute("PRAGMA foreign_keys = OFF;")
-            cursor = conn.cursor()
-            
-            # 1. Seed fallback category so item 0 doesn't trigger foreign key errors
-            cursor.execute("SELECT 1 FROM categories WHERE category_id = 1")
-            if not cursor.fetchone():
-                cursor.execute("""
-                    INSERT INTO categories (category_id, category_name, description)
-                    VALUES (1, 'System Unassigned', 'Internal system placeholder category')
-                """)
-
-            # 2. Seed the system log placeholder item
-            cursor.execute("SELECT 1 FROM items WHERE item_id = 0")
-            if not cursor.fetchone():
-                cursor.execute("""
-                    INSERT INTO items (item_id, name, description, type, priority_level, category_id, status)
-                    VALUES (0, 'System Log Placeholder', 'Reserved for tracking non-item logs.', 'Lost', 'Low', 1, 'Archived')
-                """)
-            conn.commit()
-        except sqlite3.Error as e:
-            print(f"CRITICAL Warning during placeholder initialization: {e}")
-        finally:
-            conn.execute("PRAGMA foreign_keys = ON;")
-    
-    return conn
-
 # =====================================================================
 # 1. CREATE OPERATIONS (Inserting New Data)
 # =====================================================================
@@ -71,16 +38,8 @@ def add_constituent(id_number, name, contact_email, contact_phone=None):
 				VALUES (?, ?, ?, ?)
 			""", (id_number, name, contact_email, contact_phone))
 			conn.commit()
-
-			new_id = cursor.lastrowid
-
-			add_activity_log(
-				item_id=0, 
-				details=f"Constituent Registered: {name} (ID: {id_number})", 
-				actions="Created"
-			)
-			return new_id
-		
+			return cursor.lastrowid
+				
 		except sqlite3.IntegrityError:
 			print(f"Error: Constituent with ID {id_number} already exists.")
 			return None

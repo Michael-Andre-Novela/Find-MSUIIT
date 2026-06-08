@@ -65,6 +65,7 @@ class ActivityLogView(QWidget):
 
 	def show_logs(self, log_entries: List[str]) -> None:
 		"""Flushes the central area and appends raw timeline text strings."""
+		print(f"DEBUG show logs called with {len(log_entries)} entries")  # Debug statement
 		self.log_display.clear()
 
 		if not log_entries:

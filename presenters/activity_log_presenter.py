@@ -45,13 +45,13 @@ class ActivityLogPresenter:
             
             # Match the combo box filters to the action text attributes
             if current_filter == "Items Registration":
-                if not any(x in action_type for x in ["created", "registered"]):
+                if "created" not in  action_type:
                     continue
             elif current_filter == "Claims Processed":
-                if not any(x in action_type for x in ["claim"]):
+                if "claim" not in action_type:
                     continue
             elif current_filter == "System Alerts":
-                if not any(x in action_type for x in ["system", "alert", "constituent"]):
+                if "status" not in action_type:
                     continue
             #If current_filter is "All Activity", it cleanly falls through and passes everyone!
                 
