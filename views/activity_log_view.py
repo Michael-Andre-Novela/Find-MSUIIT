@@ -64,11 +64,9 @@ class ActivityLogView(QWidget):
 	# =========================================================================
 
 	def show_logs(self, log_entries: List[str]) -> None:
-		"""Flushes the central area and appends raw timeline text strings."""
 		self.log_display.clear()
-
 		if not log_entries:
-			self.log_display.setPlaceholderText("No system log records match the current criteria filter.")
+			self.log_display.append("No log records found.")
 			return
 		for entry in log_entries:
 			self.log_display.append(entry)

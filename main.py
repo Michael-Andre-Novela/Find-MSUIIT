@@ -98,10 +98,15 @@ def main():
     # ── Activity Log ──────────────────────────────────────────────────
     try:
         from views.activity_log_view import ActivityLogView
-        window.add_view("activity", ActivityLogView())
-    except Exception:
-        pass
+        from presenters.activity_log_presenter import ActivityLogPresenter
 
+        activity_view = ActivityLogView()
+        activity_presenter = ActivityLogPresenter(activity_view)
+        activity_presenter.start()
+        window.add_view("activity", activity_view)
+    except Exception as e:
+        print(f"Activity log error: {e}")
+        
     window.show()
     return app.exec()
 

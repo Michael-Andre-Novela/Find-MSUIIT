@@ -62,15 +62,14 @@ class ActivityLogPresenter:
         self.view.show_logs(formatted_list)
 
     def _get_raw_logs(self) -> List[Dict[str, str]]:
-        """Safely fetch real records, using mock events if the database isn't hooked up yet."""
+        """Fetches real records from the database."""
         if self.model and hasattr(self.model, "get_all_activity_logs"):
             try:
                 db_logs = self.model.get_all_activity_logs()
-                if db_logs:
-                    # Convert SQLite Row objects explicitly into standard dictionaries
-                    return [dict(row) for row in db_logs]
+                return [dict(row) for row in db_logs] if db_logs else []
             except Exception as e:
                 logger.error(f"Failed to query database logs: {e}")
+        return []
 
                 
         # Mock database rows perfectly matching the design we chose

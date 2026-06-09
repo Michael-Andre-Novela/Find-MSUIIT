@@ -2,6 +2,7 @@
 
 from typing import Any
 from models import queries
+import re
 
 class ClaimsPresenter:
     def __init__(self, view: Any, model=None):
@@ -12,8 +13,6 @@ class ClaimsPresenter:
         self.view.submit_btn.clicked.connect(self.handle_submit)
         self.view.table.itemSelectionChanged.connect(self.handle_selection)
         self.view.approve_btn.clicked.connect(self.handle_approve)
-        
-        # Connect the new Reject button
         self.view.reject_btn.clicked.connect(self.handle_reject)
 
     def start(self):
@@ -26,34 +25,64 @@ class ClaimsPresenter:
         self.view.approve_btn.setEnabled(False)
         self.view.reject_btn.setEnabled(False)
 
+    def _validate_claim_form(self, data):
+        """
+        Validates claim form fields before submission.
+        Returns an error message string if invalid, or None if valid.
+        """
+        # 1. Required fields check
+        if not data["item_id"] or not data["id_number"]:
+            return "Both Item ID and Claimant ID Number are required."
+
+        # 2. Item ID must be a positive integer
+        try:
+            item_id = int(data["item_id"])
+            if item_id <= 0:
+                return "Item ID must be a positive number."
+        except ValueError:
+            return "Item ID must be a valid number (e.g., 12)."
+
+        # 3. Claimant ID format: YYYY-NNNN
+        id_pattern = re.compile(r"^\d{4}-\d{4}$")
+        if not id_pattern.match(data["id_number"]):
+            return "Claimant ID must follow the format YYYY-NNNN (e.g., 2026-0001)."
+
+        # 4. Date format: YYYY-MM-DD
+        date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+        if not data["date"] or not date_pattern.match(data["date"]):
+            return "Claim date must follow the format YYYY-MM-DD (e.g., 2026-06-10)."
+
+        return None
+
     def handle_submit(self):
         """Processes a new claim request."""
         data = self.view.get_form_data()
-        
-        if not data["item_id"] or not data["id_number"]:
-            self.view.show_message("Validation Error", "Please provide both an Item ID and a Claimant ID.")
+
+        error = self._validate_claim_form(data)
+        if error:
+            self.view.show_message("Validation Error", error)
             return
 
         constituent = self.model.get_constituent_by_school_id(data["id_number"])
         if not constituent:
-            self.view.show_message("Error", f"Claimant ID '{data['id_number']}' not found in the system.")
+            self.view.show_message("Error", f"Claimant ID '{data['id_number']}' not found in the system.\n\nPlease register them in the Constituents tab first.")
             return
-            
+
         success = self.model.create_claim_request(
-            item_id=int(data["item_id"]), 
-            constituent_id=constituent["constituent_id"], 
+            item_id=int(data["item_id"]),
+            constituent_id=constituent["constituent_id"],
             claim_date=data["date"]
         )
-        
+
         if success:
             self.view.show_message("Success", "Claim request successfully filed!")
             self.view.clear_form()
-            self.load_pending_claims() # Instantly update the table below
+            self.load_pending_claims()
         else:
-            self.view.show_message("Database Error", "Failed to file claim. Make sure the Item ID exists.")
+            self.view.show_message("Database Error", "Failed to file claim.\n\nMake sure the Item ID exists and is currently Active with no existing claim.")
 
     def handle_selection(self):
-        """Enables both Action buttons when a row is clicked."""
+        """Enables both action buttons when a row is clicked."""
         if self.view.get_selected_claim():
             self.view.approve_btn.setEnabled(True)
             self.view.reject_btn.setEnabled(True)
@@ -62,42 +91,49 @@ class ClaimsPresenter:
             self.view.reject_btn.setEnabled(False)
 
     def handle_approve(self):
-        """Approves the selected claim and officially marks the item as 'Claimed'."""
+        """Approves the selected claim and marks the item as Claimed."""
         selected = self.view.get_selected_claim()
         if not selected:
+            self.view.show_message("No Selection", "Please select a claim to approve.")
             return
-            
+
         constituent = self.model.get_constituent_by_school_id(selected["id_number"])
-        
-        if constituent:
-            success = self.model.resolve_claim_request(
-                item_id=selected["item_id"], 
-                constituent_id=constituent["constituent_id"], 
-                administrative_action='Approved'
-            )
-            
-            if success:
-                self.view.show_message("Claim Approved", f"Item {selected['item_id']} has been officially claimed!")
-                self.load_pending_claims() 
-            else:
-                self.view.show_message("Error", "Failed to process the approval.")
+        if not constituent:
+            self.view.show_message("Error", f"Constituent '{selected['id_number']}' not found in the database.")
+            return
+
+        success = self.model.resolve_claim_request(
+            item_id=selected["item_id"],
+            constituent_id=constituent["constituent_id"],
+            administrative_action="Approved"
+        )
+
+        if success:
+            self.view.show_message("Claim Approved", f"Item {selected['item_id']} has been officially claimed!")
+            self.load_pending_claims()
+        else:
+            self.view.show_message("Error", "Failed to process the approval.")
 
     def handle_reject(self):
-        """Rejects and physically deletes the claim from the database."""
+        """Rejects and deletes the claim from the database."""
         selected = self.view.get_selected_claim()
         if not selected:
+            self.view.show_message("No Selection", "Please select a claim to reject.")
             return
-            
-        # 1. Ask for confirmation before deleting
-        if self.view.ask_confirmation("Confirm Rejection", f"Are you sure you want to permanently delete the claim request for Item {selected['item_id']}?"):
-            
-            # 2. Proceed with database deletion
+
+        if self.view.ask_confirmation(
+            "Confirm Rejection",
+            f"Are you sure you want to permanently delete the claim request for Item {selected['item_id']}?"
+        ):
             constituent = self.model.get_constituent_by_school_id(selected["id_number"])
-            if constituent:
-                success = self.model.delete_claim_request(selected["item_id"], constituent["constituent_id"])
-                
-                if success:
-                    self.view.show_message("Claim Rejected", "The claim request was successfully deleted.")
-                    self.load_pending_claims()
-                else:
-                    self.view.show_message("Error", "Failed to delete the claim from the database.")
+            if not constituent:
+                self.view.show_message("Error", f"Constituent '{selected['id_number']}' not found in the database.")
+                return
+
+            success = self.model.delete_claim_request(selected["item_id"], constituent["constituent_id"])
+
+            if success:
+                self.view.show_message("Claim Rejected", "The claim request was successfully deleted.")
+                self.load_pending_claims()
+            else:
+                self.view.show_message("Error", "Failed to delete the claim from the database.")
