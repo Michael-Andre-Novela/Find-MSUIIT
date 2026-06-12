@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt
 
 # =======================================================
-# NEW: Pop-up window for adding a Category
+# Pop-up window for adding a Category
 # =======================================================
 class AddCategoryDialog(QDialog):
     def __init__(self, parent=None):
@@ -160,7 +160,6 @@ class ItemsView(QWidget):
         self.category_filter.addItem("All Categories", None)
         self.category_filter.setStyleSheet("padding: 6px; background-color: white;")
 
-        # NEW: The Add Category Button
         self.add_category_btn = QPushButton("+ New Category")
         self.add_category_btn.setStyleSheet("""
             QPushButton { background-color: #4b5563; color: white; font-weight: bold; border-radius: 4px; padding: 6px 12px; }
@@ -174,7 +173,7 @@ class ItemsView(QWidget):
         filter_layout.addWidget(self.search_input, 3) 
         filter_layout.addWidget(self.type_filter, 1)
         filter_layout.addWidget(self.category_filter, 2)
-        filter_layout.addWidget(self.add_category_btn) # Placed right before search
+        filter_layout.addWidget(self.add_category_btn)
         filter_layout.addWidget(self.search_btn)
         
         self.layout.addLayout(filter_layout)
@@ -196,29 +195,10 @@ class ItemsView(QWidget):
             QHeaderView::section { background-color: #f0f0f0; padding: 4px; border: 1px solid #cccccc; font-weight: bold; }
         """)
         table_layout.addWidget(self.table)
+        
+        # We simply add the table layout and end here. 
+        # The entire bottom action bar has been cleanly removed.
         self.layout.addLayout(table_layout)
-
-        action_layout = QHBoxLayout()
-        action_layout.setContentsMargins(20, 10, 20, 10)
-        
-        self.selected_label = QLabel("Selected Item: None")
-        self.selected_label.setStyleSheet("font-weight: bold; color: #555;")
-        
-        self.status_combo = QComboBox()
-        self.status_combo.addItems(["Archived"])
-        self.status_combo.setEnabled(False) 
-        
-        self.update_btn = QPushButton("Update Status")
-        self.update_btn.setObjectName("btnSubmit")
-        self.update_btn.setEnabled(False) 
-
-        action_layout.addWidget(self.selected_label)
-        action_layout.addStretch() 
-        action_layout.addWidget(QLabel("Change Status To:"))
-        action_layout.addWidget(self.status_combo)
-        action_layout.addWidget(self.update_btn)
-
-        self.layout.addLayout(action_layout)
 
     def populate_categories(self, categories: List[Dict]):
         self.category_filter.clear()
