@@ -3,8 +3,8 @@
 from typing import Any
 from PySide6.QtWidgets import QMenu
 from models import queries
-# Import the new dialog window we just made
 from views.items_view import EditItemDialog 
+from views.items_view import EditItemDialog, AddCategoryDialog
 
 class ItemsPresenter:
     def __init__(self, view: Any, model=None):
@@ -15,6 +15,7 @@ class ItemsPresenter:
         self.view.table.itemSelectionChanged.connect(self.handle_selection)
         self.view.update_btn.clicked.connect(self.handle_update)
         self.view.table.customContextMenuRequested.connect(self.handle_context_menu)
+        self.view.add_category_btn.clicked.connect(self.handle_add_category)
 
     def start(self):
         categories = self.model.get_all_categories()
@@ -131,3 +132,28 @@ class ItemsPresenter:
                 self.view.show_message("Deletion Blocked", f"Cannot delete '{item_name}'.\n\nThis item is currently tied to a claim request.")
             else:
                 self.view.show_message("Error", "A database error occurred.")
+
+    def handle_add_category(self):
+        """Pops up the category creation window and processes the new category."""
+        dialog = AddCategoryDialog(self.view)
+        
+        if dialog.exec():
+            data = dialog.get_data()
+            
+            if not data["name"]:
+                self.view.show_message("Validation Error", "Category Name cannot be empty.")
+                return
+                
+            result = self.model.add_category(data["name"], data["description"])
+            
+            if result == True:
+                self.view.show_message("Success", f"Category '{data['name']}' was successfully added to the system!")
+                
+                # Instantly refresh the dropdown menus with the new category
+                categories = self.model.get_all_categories()
+                self.view.populate_categories(categories)
+                
+            elif result == "duplicate":
+                self.view.show_message("Error", f"The category '{data['name']}' already exists.")
+            else:
+                self.view.show_message("Database Error", "Failed to save the new category.")

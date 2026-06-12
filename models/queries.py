@@ -171,15 +171,7 @@ def report_found_item(name, description, category_id, priority_level, constituen
 			return False, msg
 
 def create_claim_request(item_id, constituent_id, claim_date):
-	"""Create a claim request with validation.
-
-	Performs these checks before inserting:
-	- item exists
-	- item.status is 'Active'
-	- no existing claim for the item
-
-	Returns the `item_id` on success, or `None` on validation or DB failure.
-	"""
+	"""Create a claim request with validation."""
 	# Validate claim_date format YYYY-MM-DD before DB operations
 	try:
 		datetime.datetime.strptime(claim_date, "%Y-%m-%d")
@@ -198,6 +190,14 @@ def create_claim_request(item_id, constituent_id, claim_date):
 				msg = f"Failed to create claim request: item {item_id} not found."
 				print(msg)
 				return False, msg
+                
+			# --- THE NEW LOGIC FIX ---
+			if row["type"] == "Lost":
+				msg = f"Item {item_id} is marked as 'Lost'. You can only claim 'Found' items that are physically in the office."
+				print(msg)
+				return False, msg
+			# -------------------------
+
 			# Only items with status 'Active' are claimable
 			if row["status"] != "Active":
 				msg = f"Failed to create claim request: item {item_id} not claimable (status={row['status']})."
@@ -236,6 +236,35 @@ def create_claim_request(item_id, constituent_id, claim_date):
 			msg = f"Failed to create claim request: {e}"
 			print(msg)
 			return False, msg
+
+def add_category(category_name, description=""):
+    """Adds a new item category to the system."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            # 1. Check for duplicates first (ignoring case)
+            cursor.execute("SELECT 1 FROM categories WHERE LOWER(category_name) = LOWER(?)", (category_name,))
+            if cursor.fetchone():
+                return "duplicate"
+                
+            # 2. Insert the new category
+            cursor.execute("""
+                INSERT INTO categories (category_name, description)
+                VALUES (?, ?)
+            """, (category_name, description))
+            
+            # 3. Log the system change
+            action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            cursor.execute("""
+                INSERT INTO activity_log (item_id, details, actions, action_date)
+                VALUES (0, ?, 'System Alert', ?)
+            """, (f"New Category Created: '{category_name}'", action_date))
+
+            conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Failed to add category: {e}")
+            return False
 
 # =====================================================================
 # 2. READ OPERATIONS (Fetching Data)
@@ -472,6 +501,38 @@ def search_active_items(search_query=None, category_id=None, item_type=None):
 		cursor.execute(query, params)
 		return [dict(row) for row in cursor.fetchall()]
 
+def search_archived_items(search_query=None, category_id=None, item_type=None):
+    """Dynamic search function for historical (Claimed or Archived) items."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        
+        # We fetch 'status' instead of 'priority_level' for the archives
+        query = """
+            SELECT i.item_id, i.name, i.type, i.status, c.category_name 
+            FROM items i
+            LEFT JOIN categories c ON i.category_id = c.category_id
+            WHERE i.status != 'Active'
+        """
+        params = []
+
+        if search_query:
+            query += " AND (i.name LIKE ? OR i.description LIKE ?)"
+            params.extend([f'%{search_query}%', f'%{search_query}%'])
+            
+        if category_id:
+            query += " AND i.category_id = ?"
+            params.append(category_id)
+            
+        if item_type:
+            query += " AND i.type = ?"
+            params.append(item_type)
+            
+        query += " ORDER BY i.item_id DESC"
+        
+        cursor.execute(query, params)
+        return [dict(row) for row in cursor.fetchall()]
+	
+
 # =====================================================================
 # 6. AGGREGATIONS & ANALYTICS OPERATIONS
 # =====================================================================
@@ -653,17 +714,46 @@ def get_item_by_id(item_id):
         return dict(row) if row else None
 
 def update_item_details(item_id, name, description, item_type, category_id, location):
-    """Updates the physical details of an item."""
+    """Updates the physical details of an item, safely handling bridge tables."""
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
+            # 1. Update main item details (NO location here)
             cursor.execute("""
                 UPDATE items 
-                SET name = ?, description = ?, type = ?, category_id = ?, location = ?
+                SET name = ?, description = ?, type = ?, category_id = ?
                 WHERE item_id = ?
-            """, (name, description, item_type, category_id, location, item_id))
+            """, (name, description, item_type, category_id, item_id))
+            
+            # 2. Safely update the correct bridge table for location
+            if item_type == "Lost":
+                cursor.execute("UPDATE lost SET location_lost = ? WHERE item_id = ?", (location, item_id))
+            elif item_type == "Found":
+                cursor.execute("UPDATE found SET location_found = ? WHERE item_id = ?", (location, item_id))
+                
             conn.commit()
             return True
         except sqlite3.Error as e:
             print(f"Failed to update item details: {e}")
             return False
+		
+def purge_archived_item(item_id):
+    """Permanently hard-deletes an item and all its associated history from the database."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            # Securely wipe the item from all connected tables to satisfy foreign key rules
+            cursor.execute("DELETE FROM activity_log WHERE item_id = ?", (item_id,))
+            cursor.execute("DELETE FROM claim WHERE item_id = ?", (item_id,))
+            cursor.execute("DELETE FROM lost WHERE item_id = ?", (item_id,))
+            cursor.execute("DELETE FROM found WHERE item_id = ?", (item_id,))
+            
+            # Finally, wipe the core item
+            cursor.execute("DELETE FROM items WHERE item_id = ?", (item_id,))
+            
+            conn.commit()
+            return True
+        except sqlite3.Error as e:
+            conn.rollback()
+            print(f"Failed to purge archived item: {e}")
+            return False		
