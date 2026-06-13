@@ -1,6 +1,7 @@
 """Items management presenter."""
 
 from typing import Any
+from PySide6.QtWidgets import QMenu
 from models import queries
 from views.items_view import EditItemDialog, AddCategoryDialog 
 
@@ -9,35 +10,27 @@ class ItemsPresenter:
         self.view = view
         self.model = model or queries
         
-        # Connect UI Events to Functions
         self.view.search_btn.clicked.connect(self.load_items)
         self.view.table.customContextMenuRequested.connect(self.handle_context_menu)
         self.view.add_category_btn.clicked.connect(self.handle_add_category)
 
     def start(self):
-        """Initializes the view with category data and loads all active items."""
         categories = self.model.get_all_categories()
         self.view.populate_categories(categories)
         self.load_items()
 
     def load_items(self):
-        """Fetches items from the database based on the active filters."""
         search_text = self.view.search_input.text().strip()
-        
-        # Handle the dropdowns (convert "All" to None for the database query)
         type_text = self.view.type_filter.currentText()
         item_type = type_text if type_text != "All Types" else None
-        
         category_id = self.view.category_filter.currentData()
 
-        # Fetch data using your existing query
         items = self.model.search_active_items(
             search_query=search_text if search_text else None,
             category_id=category_id,
             item_type=item_type
         )
         
-        # Push data to the UI table
         self.view.populate_table(items)
 
     def handle_context_menu(self, position):

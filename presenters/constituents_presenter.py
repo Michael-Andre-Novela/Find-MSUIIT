@@ -73,12 +73,9 @@ class ConstituentsPresenter:
             self.view.show_message("Validation Error", error)
             return
 
-        import re
-
-        # 2. Strict School ID Format Check (e.g., 2024-1234)
-        id_pattern = re.compile(r"^\d{4}-\d{4}$")
-        if not id_pattern.match(data["id_number"]):
-            self.view.show_message("Validation Error", "ID Number must follow the format YYYY-NNNN (e.g., 2026-0001).")
+        existing = self.model.get_constituent_by_school_id(data["id_number"])
+        if existing:
+            self.view.show_message("Duplicate Error", f"ID '{data['id_number']}' is already registered.")
             return
             
         result = self.model.add_constituent(
@@ -106,17 +103,15 @@ class ConstituentsPresenter:
             self.view.show_message("Validation Error", error)
             return
             
-        # 7. Submit to Database
-        result_id = self.model.add_constituent(
-            id_number=data["id_number"], 
+        success = self.model.update_constituent_info(
+            constituent_id=self.view.hidden_constituent_id,
             name=data["name"],
             email=data["email"],
             phone=data["phone"]
         )
         
-        # 8. Handle Result Success
-        if result_id:
-            self.view.show_message("Success", f"Constituent '{data['name']}' has been registered successfully!")
+        if success:
+            self.view.show_message("Success", "Constituent information updated successfully!")
             self.view.clear_form()
             self.load_directory()
         else:
