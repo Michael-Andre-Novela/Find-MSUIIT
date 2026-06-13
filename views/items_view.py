@@ -3,8 +3,7 @@
 from typing import Optional, List, Dict
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QComboBox, QPushButton, QTableWidget, 
-                               QTableWidgetItem, QHeaderView, QAbstractItemView, QMessageBox,
-                               QMenu, QDialog, QFormLayout, QDialogButtonBox)
+                               QTableWidgetItem, QHeaderView, QAbstractItemView, QMessageBox)
 from PySide6.QtCore import Qt
 
 # =======================================================
@@ -139,11 +138,23 @@ class ItemsView(QWidget):
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 10)
 
+        # Title Header
         title = QLabel("Manage Active Items")
-        title.setStyleSheet("QLabel { font-size: 25px; font-weight: bold; background-color: #b81417; color: white; padding: 15px; }")
+        title.setStyleSheet("""
+            QLabel {
+                font-size: 25px; 
+                font-weight: bold; 
+                background-color: #b81417; 
+                color: white;              
+                padding: 15px; 
+            }
+        """)
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
+        # ==========================================
+        # TOP BAR: FILTERS & SEARCH
+        # ==========================================
         filter_layout = QHBoxLayout()
         filter_layout.setContentsMargins(20, 10, 20, 0)
         filter_layout.setSpacing(10)
@@ -170,6 +181,7 @@ class ItemsView(QWidget):
         self.search_btn.setObjectName("btnSubmit") 
         self.search_btn.setFixedWidth(100)
 
+        # Add to layout with stretch factors (Search bar gets the most space)
         filter_layout.addWidget(self.search_input, 3) 
         filter_layout.addWidget(self.type_filter, 1)
         filter_layout.addWidget(self.category_filter, 2)
@@ -178,21 +190,37 @@ class ItemsView(QWidget):
         
         self.layout.addLayout(filter_layout)
 
+        # ==========================================
+        # MIDDLE: DATA TABLE
+        # ==========================================
         table_layout = QVBoxLayout()
         table_layout.setContentsMargins(20, 10, 20, 0)
 
-        self.table = QTableWidget(0, 5) 
+        self.table = QTableWidget(0, 5) # 0 initial rows, 5 columns
         self.table.setHorizontalHeaderLabels(["Item ID", "Name", "Type", "Category", "Priority"])
+        
+        # Make the columns stretch to fill the screen, but keep ID column tight
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents) 
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows) 
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  
+        
+        # Configure table behavior
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows) # Select whole rows, not cells
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # Prevent user from typing in cells
         self.table.setAlternatingRowColors(True)
-        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
-
+        
         self.table.setStyleSheet("""
-            QTableWidget { background-color: white; alternate-background-color: #f9f9f9; gridline-color: #e0e0e0; border: 1px solid #cccccc; }
-            QHeaderView::section { background-color: #f0f0f0; padding: 4px; border: 1px solid #cccccc; font-weight: bold; }
+            QTableWidget {
+                background-color: white;
+                alternate-background-color: #f9f9f9;
+                gridline-color: #e0e0e0;
+                border: 1px solid #cccccc;
+            }
+            QHeaderView::section {
+                background-color: #f0f0f0;
+                padding: 4px;
+                border: 1px solid #cccccc;
+                font-weight: bold;
+            }
         """)
         table_layout.addWidget(self.table)
         
@@ -201,12 +229,14 @@ class ItemsView(QWidget):
         self.layout.addLayout(table_layout)
 
     def populate_categories(self, categories: List[Dict]):
+        """Fills the category dropdown for filtering."""
         self.category_filter.clear()
         self.category_filter.addItem("All Categories", None)
         for cat in categories:
             self.category_filter.addItem(cat["category_name"], cat["category_id"])
 
     def populate_table(self, items: List[Dict]):
+        """Clears the table and rebuilds it with new data."""
         self.table.setRowCount(0) 
         for row_idx, item in enumerate(items):
             self.table.insertRow(row_idx)
@@ -217,24 +247,12 @@ class ItemsView(QWidget):
             self.table.setItem(row_idx, 4, QTableWidgetItem(item["priority_level"]))
 
     def get_selected_item_id(self):
+        """Returns the ID of the currently highlighted row."""
         selected_rows = self.table.selectedItems()
         if selected_rows:
+            # Column 0 contains the Item ID
             return int(self.table.item(selected_rows[0].row(), 0).text())
         return None
 
-    def get_item_at_position(self, position):
-        item = self.table.itemAt(position)
-        if item:
-            row = item.row()
-            self.table.selectRow(row) 
-            item_id = int(self.table.item(row, 0).text())
-            item_name = self.table.item(row, 1).text()
-            return item_id, item_name
-        return None, None
-
     def show_message(self, title, message):
         QMessageBox.information(self, title, message)
-
-    def ask_confirmation(self, title, message):
-        reply = QMessageBox.question(self, title, message, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        return reply == QMessageBox.Yes

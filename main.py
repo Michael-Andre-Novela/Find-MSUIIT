@@ -5,7 +5,11 @@ from PySide6.QtWidgets import QApplication
 
 from models.connection import initialize_db
 from models.queries import verify_database_integrity
+
 from views.main_window import MainWindow
+
+
+
 
 def _load_stylesheet(path: Path):
     try:
@@ -13,6 +17,7 @@ def _load_stylesheet(path: Path):
             return fh.read()
     except FileNotFoundError:
         return None
+
 
 def main():
     initialize_db()
@@ -49,6 +54,7 @@ def main():
         from views.report_item_view import ReportItemView
         from presenters.report_item_presenter import ReportItemPresenter
         
+
         report_view = ReportItemView()
         report_presenter = ReportItemPresenter(report_view)
         report_presenter.start()
@@ -63,7 +69,7 @@ def main():
 
         claims_view = ClaimsView()
         claims_presenter = ClaimsPresenter(claims_view)
-        claims_presenter.start() # Fetches the data for the claims table
+        claims_presenter.start()
         window.add_view("claims", claims_view)
     except Exception:
         pass
@@ -76,23 +82,14 @@ def main():
 
         items_view = ItemsView()
         items_presenter = ItemsPresenter(items_view)
-        items_presenter.start() # Loads the active items table data
+        items_presenter.start() # This loads the table data!
         window.add_view("items", items_view)
     except Exception:
         pass
 
-    # ── Constituents Directory ────────────────────────────────────────
     try:
         from views.constituents_view import ConstituentsView
-        from presenters.constituents_presenter import ConstituentsPresenter
-
-        constituents_view = ConstituentsView()
-        constituents_presenter = ConstituentsPresenter(constituents_view)
-        
-        # MISSING CODE INSERTED: This triggers the database query on startup!
-        constituents_presenter.start() 
-        
-        window.add_view("constituents", constituents_view)
+        window.add_view("constituents", ConstituentsView())
     except Exception:
         pass
 
@@ -113,6 +110,7 @@ def main():
         
     window.show()
     return app.exec()
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

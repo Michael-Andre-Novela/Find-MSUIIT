@@ -1,6 +1,10 @@
-"""Claims presenter."""
+"""Claims presenter: bridges `views.claims_view.ClaimsView` and `models.queries`.
+
+Loads pending claims into the view, and handles Approve / Reject actions.
+"""
 
 from typing import Any
+
 from models import queries
 import re
 
@@ -16,14 +20,18 @@ class ClaimsPresenter:
         self.view.reject_btn.clicked.connect(self.handle_reject)
 
     def start(self):
-        """Initializes the view by loading the pending claims table."""
-        self.load_pending_claims()
+        """Called on initial load to populate the claims table."""
+        self.load_claims()
 
-    def load_pending_claims(self):
-        claims = self.model.get_pending_claims()
-        self.view.populate_table(claims)
-        self.view.approve_btn.setEnabled(False)
-        self.view.reject_btn.setEnabled(False)
+    def load_claims(self):
+        """Fetches all pending claims from the DB and sends them to the view."""
+        try:
+            claims = self.model.get_pending_claims()
+            self.view.populate_claims(claims)
+            log.info(f"Loaded {len(claims)} pending claim(s).")
+        except Exception as e:
+            log.error(f"Failed to load claims: {e}", exc_info=True)
+            self.view.show_message("Error", "Could not load claims from the database.")
 
     def _validate_claim_form(self, data):
         """
@@ -62,9 +70,10 @@ class ClaimsPresenter:
             self.view.show_message("Validation Error", "Please provide both an Item ID and a Claimant ID.")
             return
 
-        constituent = self.model.get_constituent_by_school_id(data["id_number"])
+        # Look up the internal constituent_id from the school ID number
+        constituent = self.model.get_constituent_by_school_id(id_number)
         if not constituent:
-            self.view.show_message("Error", f"Claimant ID '{data['id_number']}' not found in the system.")
+            self.view.show_message("Error", f"Constituent '{id_number}' not found in the database.")
             return
             
         # Unpack the two values returned by the updated database query
