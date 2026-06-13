@@ -3,7 +3,7 @@
 from typing import Optional, List, Dict
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit, 
                                QComboBox, QPushButton, QHBoxLayout, QMessageBox,
-                               QDateEdit)
+                               QDateEdit, QFileDialog)
 from PySide6.QtCore import Qt, QDate, QRegularExpression
 from PySide6.QtGui import QRegularExpressionValidator
 
@@ -51,6 +51,10 @@ class ReportItemView(QWidget):
         
         self.category_combo = QComboBox()
         
+        # Priority Level
+        self.priority_combo = QComboBox()
+        self.priority_combo.addItems(["Low", "Medium", "High"])
+
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("e.g. Black Leather Wallet")
         
@@ -89,6 +93,16 @@ class ReportItemView(QWidget):
         self.location_input = QLineEdit()
         self.location_input.setPlaceholderText("e.g. Main Library, 2nd Floor")
 
+        # Photo/Image Input
+        self.photo_input = QLineEdit()
+        self.photo_input.setPlaceholderText("Optional image filepath...")
+        self.photo_btn = QPushButton("Browse Image")
+        self.photo_btn.setStyleSheet("""
+            QPushButton { background-color: #4b5563; color: white; font-weight: bold; border-radius: 4px; padding: 6px 12px; }
+            QPushButton:hover { background-color: #374151; }
+        """)
+        self.photo_btn.clicked.connect(self.handle_browse_photo)
+
         # ==========================================
         # BUILD THE COMPACT UI LAYOUT
         # ==========================================
@@ -97,6 +111,7 @@ class ReportItemView(QWidget):
         row1.setSpacing(15)
         row1.addLayout(create_field("Report Type", self.type_combo))
         row1.addLayout(create_field("Category", self.category_combo))
+        row1.addLayout(create_field("Priority Level", self.priority_combo))
         self.form_layout.addLayout(row1)
 
         self.form_layout.addLayout(create_field("Item Name", self.name_input))
@@ -116,6 +131,13 @@ class ReportItemView(QWidget):
 
         self.form_layout.addLayout(create_field("Location", self.location_input))
 
+        photo_container = QWidget()
+        photo_layout = QHBoxLayout(photo_container)
+        photo_layout.setContentsMargins(0, 0, 0, 0)
+        photo_layout.addWidget(self.photo_input, 4)
+        photo_layout.addWidget(self.photo_btn, 1)
+        self.form_layout.addLayout(create_field("Image Attachment", photo_container))
+
         self.layout.addLayout(self.form_layout)
 
         # Buttons
@@ -133,6 +155,11 @@ class ReportItemView(QWidget):
         self.layout.addLayout(btn_layout)
         self.layout.addStretch()
 
+    def handle_browse_photo(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select Photo", "", "Images (*.png *.jpg *.jpeg *.webp *.gif)")
+        if file_path:
+            self.photo_input.setText(file_path)
+
     def populate_categories(self, categories: List[Dict]):
         self.category_combo.clear()
         for cat in categories:
@@ -142,6 +169,8 @@ class ReportItemView(QWidget):
         return {
             "type": self.type_combo.currentText(),
             "category_id": self.category_combo.currentData(),
+            "priority": self.priority_combo.currentText(),
+            "photo_filepath": self.photo_input.text().strip(),
             "name": self.name_input.text().strip(),
             "description": self.desc_input.text().strip(),
             "reporter_id": self.constituent_input.text().strip(),
@@ -154,7 +183,13 @@ class ReportItemView(QWidget):
         self.desc_input.clear()
         self.constituent_input.clear()
         self.location_input.clear()
+        self.photo_input.clear()
+        self.priority_combo.setCurrentIndex(0)
         self.date_input.setDate(QDate.currentDate()) 
         
     def show_message(self, title, message):
         QMessageBox.information(self, title, message)
+
+    def ask_confirmation(self, title, message):
+        reply = QMessageBox.question(self, title, message, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        return reply == QMessageBox.Yes

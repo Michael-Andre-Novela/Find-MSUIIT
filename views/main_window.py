@@ -67,9 +67,32 @@ class MainWindow(QMainWindow):
         self._add_sidebar_action(sidebar_layout, "report", "📝  Report Item")
         self._add_sidebar_action(sidebar_layout, "constituents", "👥  Constituents")
         self._add_sidebar_action(sidebar_layout, "activity", "📜  Activity Log")
+        self._add_sidebar_action(sidebar_layout, "maintenance", "🛠️  Maintenance")
 
         vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         sidebar_layout.addItem(vertical_spacer)
+
+        self._current_theme = "light"
+        self.btn_theme_toggle = QPushButton("🌙  Dark Mode", self._sidebar)
+        self.btn_theme_toggle.setObjectName("themeToggleButton")
+        self.btn_theme_toggle.clicked.connect(self.toggle_theme)
+        self.btn_theme_toggle.setStyleSheet("""
+            QPushButton {
+                background-color: #1F2937;
+                color: #FFFFFF;
+                font-family: "Segoe UI", sans-serif;
+                font-size: 13px;
+                font-weight: 600;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 15px;
+                margin: 10px 12px;
+            }
+            QPushButton:hover {
+                background-color: #374151;
+            }
+        """)
+        sidebar_layout.addWidget(self.btn_theme_toggle)
 
     def _add_sidebar_action(self, layout: QVBoxLayout, view_name: str, label: str) -> None:
         """Creates a checkable, exclusive navigation sidebar button link."""
@@ -116,3 +139,31 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage(f"View '{name}' not available", 3000)
             except Exception:
                 pass
+
+    def toggle_theme(self) -> None:
+        """Switch stylesheets between light and dark mode."""
+        from pathlib import Path
+        from PySide6.QtWidgets import QApplication
+
+        app = QApplication.instance()
+        if not app:
+            return
+
+        current_theme = getattr(self, "_current_theme", "light")
+        assets_dir = Path(__file__).resolve().parent.parent / "assets"
+
+        if current_theme == "light":
+            new_theme = "dark"
+            qss_path = assets_dir / "styles_dark.qss"
+            self.btn_theme_toggle.setText("☀️  Light Mode")
+        else:
+            new_theme = "light"
+            qss_path = assets_dir / "styles.qss"
+            self.btn_theme_toggle.setText("🌙  Dark Mode")
+
+        try:
+            with qss_path.open("r", encoding="utf-8") as fh:
+                app.setStyleSheet(fh.read())
+            self._current_theme = new_theme
+        except Exception as e:
+            print(f"Failed to load stylesheet {qss_path.name}: {e}")

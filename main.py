@@ -110,6 +110,18 @@ def main():
         window.add_view("activity", activity_view)
     except Exception as e:
         print(f"Failed to load Activity Log view: {e}")
+
+    # ── Maintenance & Backups ─────────────────────────────────────────
+    try:
+        from views.maintenance_view import MaintenanceView
+        from presenters.maintenance_presenter import MaintenancePresenter
+
+        maintenance_view = MaintenanceView()
+        maintenance_presenter = MaintenancePresenter(maintenance_view)
+        maintenance_presenter.start()
+        window.add_view("maintenance", maintenance_view)
+    except Exception as e:
+        print(f"Failed to load Maintenance view: {e}")
         
     window.show()
     return app.exec()

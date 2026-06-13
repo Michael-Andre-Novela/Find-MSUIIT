@@ -2,6 +2,7 @@
 
 from typing import Any
 from models import queries
+from modules.matching import find_matches_for_item
 
 class ReportItemPresenter:
     def __init__(self, view: Any, model=None):
@@ -44,22 +45,53 @@ class ReportItemPresenter:
             return
             
         c_id = constituent["constituent_id"]
+
+        # 4. Duplicate Detection (Warning before saving)
+        categories = self.model.get_all_categories()
+        category_name = next((c["category_name"] for c in categories if c["category_id"] == data["category_id"]), "")
         
-        # 4. Submit to Database
+        target_item = {
+            "name": data["name"],
+            "description": data["description"],
+            "category_name": category_name
+        }
+
+        # Check for similar active items of the same type (duplicate threshold 0.65)
+        same_type_items = self.model.search_active_items(item_type=data["type"])
+        duplicates = find_matches_for_item(target_item, same_type_items, threshold=0.65)
+
+        if duplicates:
+            duplicate_list = "\n".join([f"- {item['name']} (ID: {item['item_id']}, Category: {item['category_name']})" for item in duplicates[:3]])
+            if len(duplicates) > 3:
+                duplicate_list += "\n...and others."
+            
+            confirm = self.view.ask_confirmation(
+                "Potential Duplicate Detected",
+                f"The system detected the following similar active '{data['type']}' items:\n\n"
+                f"{duplicate_list}\n\n"
+                f"Do you still wish to submit this report?"
+            )
+            if not confirm:
+                return # Abort submission
+        
+        # 5. Submit to Database
+        photo_path = data["photo_filepath"] if data["photo_filepath"] else None
         if data["type"] == "Lost":
             success, payload = self.model.report_lost_item(
                 name=data["name"], description=data["description"], 
-                category_id=data["category_id"], priority_level="Low", 
-                constituent_id=c_id, date_lost=data["date"], location_lost=data["location"]
+                category_id=data["category_id"], priority_level=data["priority"], 
+                constituent_id=c_id, date_lost=data["date"], location_lost=data["location"],
+                photo_filepath=photo_path
             )
         else:
             success, payload = self.model.report_found_item(
                 name=data["name"], description=data["description"], 
-                category_id=data["category_id"], priority_level="Low", 
-                constituent_id=c_id, date_found=data["date"], location_found=data["location"]
+                category_id=data["category_id"], priority_level=data["priority"], 
+                constituent_id=c_id, date_found=data["date"], location_found=data["location"],
+                photo_filepath=photo_path
             )
 
-        # 5. Handle Result
+        # 6. Handle Result
         if success:
             self.view.show_message("Success", f"Item successfully reported!\nSystem Item ID: {payload}")
             self.view.clear_form()

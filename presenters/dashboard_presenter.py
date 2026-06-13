@@ -23,7 +23,7 @@ class DashboardPresenter:
             stats = self.model.get_dashboard_statistics()
         except Exception as e:
             log.error(f"Failed to load dashboard statistics: {e}")
-            stats = {"active_lost": 0, "active_found": 0, "pending_claims": 0, "total_claimed": 0}
+            stats = {"active_lost": 0, "active_found": 0, "pending_claims": 0, "total_claimed": 0, "unclaimed": 0}
 
         # 2. Fetch active items list
         try:
@@ -32,11 +32,20 @@ class DashboardPresenter:
             log.error(f"Failed to load active items: {e}")
             items = []
 
-        # 3. Push to view
+        # 3. Fetch unclaimed Found items alerts (stored > 30 days)
+        try:
+            alerts = self.model.get_unclaimed_found_items_alerts(days=30)
+        except Exception as e:
+            log.error(f"Failed to fetch unclaimed found items alerts: {e}")
+            alerts = []
+
+        # 4. Push to view
         self.view.update_counters(
             lost=stats["active_lost"],
             found=stats["active_found"],
             pending=stats["pending_claims"],
-            claimed=stats["total_claimed"]
+            claimed=stats["total_claimed"],
+            unclaimed=stats.get("unclaimed", 0)
         )
+        self.view.show_alerts(alerts)
         self.view.show_items(items)

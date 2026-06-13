@@ -4,6 +4,8 @@ from typing import Any
 from PySide6.QtWidgets import QMenu
 from models import queries
 from views.items_view import EditItemDialog, AddCategoryDialog 
+from views.matches_dialog import MatchesDialog
+from modules.matching import find_matches_for_item
 
 class ItemsPresenter:
     def __init__(self, view: Any, model=None):
@@ -44,6 +46,8 @@ class ItemsPresenter:
             QMenu::item:selected { background-color: #f0f0f0; }
         """)
         
+        match_action = menu.addAction(f"Find Matches for '{item_name}'")
+        menu.addSeparator()
         edit_action = menu.addAction(f"Edit '{item_name}'")
         archive_action = menu.addAction(f"Archive '{item_name}'") # Added to context menu
         menu.addSeparator() 
@@ -57,6 +61,43 @@ class ItemsPresenter:
             self.handle_edit(item_id)
         elif action == archive_action:
             self.handle_archive(item_id, item_name) # Triggers the new archive method
+        elif action == match_action:
+            self.handle_find_matches(item_id)
+
+    def handle_find_matches(self, item_id):
+        item_details = self.model.get_item_details(item_id, None)
+        if not item_details:
+            self.view.show_message("Error", "Could not retrieve item details.")
+            return
+
+        opposite_type = "Found" if item_details["type"] == "Lost" else "Lost"
+        candidates = self.model.search_active_items(item_type=opposite_type)
+        matches = find_matches_for_item(item_details, candidates)
+
+        dialog = MatchesDialog(self.view, item_details)
+        dialog.populate_matches(matches)
+
+        if dialog.exec():
+            selected = dialog.get_selected_match()
+            if selected:
+                # Resolve claimant and found item ID for claim routing
+                if item_details["type"] == "Lost":
+                    claimant_id = item_details.get("constituent_id_number")
+                    found_item_id = selected["item_id"]
+                else:
+                    match_details = self.model.get_item_details(selected["item_id"], "Lost")
+                    claimant_id = match_details.get("constituent_id_number") if match_details else ""
+                    found_item_id = item_details["item_id"]
+
+                # Get MainWindow and route to Claims view
+                main_window = self.view.window()
+                try:
+                    claims_view = main_window.get_view("claims")
+                    claims_view.item_id_input.setText(str(found_item_id))
+                    claims_view.constituent_input.setText(str(claimant_id))
+                    main_window.show_view("claims")
+                except Exception as e:
+                    self.view.show_message("Routing Error", f"Failed to open claims view: {e}")
 
     def handle_archive(self, item_id, item_name):
         """Archives the selected item after confirmation."""

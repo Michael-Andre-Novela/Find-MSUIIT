@@ -543,7 +543,8 @@ def get_dashboard_statistics():
 		"active_lost": 0,
 		"active_found": 0,
 		"pending_claims": 0,
-		"total_claimed": 0
+		"total_claimed": 0,
+		"unclaimed": 0
 	}
     
 	with get_connection() as conn:
@@ -564,8 +565,36 @@ def get_dashboard_statistics():
 		# Count Total Claimed (Resolved Items)
 		cursor.execute("SELECT COUNT(*) FROM items WHERE status='Claimed'")
 		stats["total_claimed"] = cursor.fetchone()[0]
+
+		# Count Unclaimed Found items (Active Found items with no approved claim)
+		cursor.execute("""
+			SELECT COUNT(*) FROM items i
+			WHERE i.type = 'Found' AND i.status = 'Active'
+			AND i.item_id NOT IN (
+				SELECT item_id FROM claim WHERE claim_status = 'Approved'
+			)
+		""")
+		stats["unclaimed"] = cursor.fetchone()[0]
         
 	return stats
+
+def get_unclaimed_found_items_alerts(days=30):
+	"""Returns active found items reported more than `days` ago that are still unclaimed."""
+	cutoff_date = (datetime.date.today() - datetime.timedelta(days=days)).strftime("%Y-%m-%d")
+	with get_connection() as conn:
+		cursor = conn.cursor()
+		cursor.execute("""
+			SELECT i.item_id, i.name, f.date_found, f.location_found
+			FROM items i
+			JOIN found f ON i.item_id = f.item_id
+			WHERE i.status = 'Active' AND f.date_found <= ?
+			AND i.item_id NOT IN (
+				SELECT item_id FROM claim WHERE claim_status = 'Approved'
+			)
+			ORDER BY f.date_found ASC
+		""", (cutoff_date,))
+		return [dict(row) for row in cursor.fetchall()]
+
 
 def get_frequent_lost_locations(limit=5):
 	"""Finds the most common locations where items are reported lost."""
