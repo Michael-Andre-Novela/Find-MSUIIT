@@ -8,7 +8,54 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt
 
 # =======================================================
-# NEW: Pop-up window for editing an item
+# Pop-up window for adding a Category
+# =======================================================
+class AddCategoryDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add New Category")
+        self.setMinimumWidth(350)
+        self.setStyleSheet("""
+            QDialog { background-color: #F9FAFB; }
+            QLabel { font-weight: bold; color: #333; }
+            QLineEdit { padding: 6px; border: 1px solid #cccccc; border-radius: 4px; background-color: white; color: black; }
+        """)
+
+        layout = QVBoxLayout(self)
+        form_layout = QFormLayout()
+        form_layout.setSpacing(10)
+        
+        self.name_input = QLineEdit()
+        self.name_input.setPlaceholderText("e.g. Tumblers, Umbrellas...")
+        
+        self.desc_input = QLineEdit()
+        self.desc_input.setPlaceholderText("Optional description")
+
+        form_layout.addRow("Category Name:", self.name_input)
+        form_layout.addRow("Description:", self.desc_input)
+        layout.addLayout(form_layout)
+
+        self.btns = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+        self.btns.accepted.connect(self.accept)
+        self.btns.rejected.connect(self.reject)
+        
+        save_btn = self.btns.button(QDialogButtonBox.Save)
+        save_btn.setObjectName("btnSubmit")
+        save_btn.setText("Add Category")
+        
+        cancel_btn = self.btns.button(QDialogButtonBox.Cancel)
+        cancel_btn.setObjectName("btnCancel")
+
+        layout.addWidget(self.btns)
+
+    def get_data(self):
+        return {
+            "name": self.name_input.text().strip(),
+            "description": self.desc_input.text().strip()
+        }
+
+# =======================================================
+# Pop-up window for editing an item
 # =======================================================
 class EditItemDialog(QDialog):
     def __init__(self, parent=None, categories=None):
@@ -46,25 +93,20 @@ class EditItemDialog(QDialog):
 
         layout.addLayout(form_layout)
 
-        # Standard Save/Cancel buttons for a pop-up window
         self.btns = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         self.btns.accepted.connect(self.accept)
         self.btns.rejected.connect(self.reject)
         
-        # --- THE FIX ---
-        # We hook these buttons into your global styles.qss so they look perfect!
         save_btn = self.btns.button(QDialogButtonBox.Save)
         save_btn.setObjectName("btnSubmit")
         save_btn.setText("Save Changes")
         
         cancel_btn = self.btns.button(QDialogButtonBox.Cancel)
         cancel_btn.setObjectName("btnCancel")
-        # ---------------
 
         layout.addWidget(self.btns)
 
     def load_data(self, item_data):
-        """Pre-fills the boxes with the item's current database values."""
         self.name_input.setText(item_data.get("name", ""))
         self.desc_input.setText(item_data.get("description", ""))
         self.location_input.setText(item_data.get("location", ""))
@@ -80,7 +122,6 @@ class EditItemDialog(QDialog):
                 break
 
     def get_data(self):
-        """Extracts the newly typed data."""
         return {
             "name": self.name_input.text().strip(),
             "description": self.desc_input.text().strip(),
@@ -119,6 +160,12 @@ class ItemsView(QWidget):
         self.category_filter.addItem("All Categories", None)
         self.category_filter.setStyleSheet("padding: 6px; background-color: white;")
 
+        self.add_category_btn = QPushButton("+ New Category")
+        self.add_category_btn.setStyleSheet("""
+            QPushButton { background-color: #4b5563; color: white; font-weight: bold; border-radius: 4px; padding: 6px 12px; }
+            QPushButton:hover { background-color: #374151; }
+        """)
+
         self.search_btn = QPushButton("Search")
         self.search_btn.setObjectName("btnSubmit") 
         self.search_btn.setFixedWidth(100)
@@ -126,6 +173,7 @@ class ItemsView(QWidget):
         filter_layout.addWidget(self.search_input, 3) 
         filter_layout.addWidget(self.type_filter, 1)
         filter_layout.addWidget(self.category_filter, 2)
+        filter_layout.addWidget(self.add_category_btn)
         filter_layout.addWidget(self.search_btn)
         
         self.layout.addLayout(filter_layout)
@@ -147,29 +195,10 @@ class ItemsView(QWidget):
             QHeaderView::section { background-color: #f0f0f0; padding: 4px; border: 1px solid #cccccc; font-weight: bold; }
         """)
         table_layout.addWidget(self.table)
+        
+        # We simply add the table layout and end here. 
+        # The entire bottom action bar has been cleanly removed.
         self.layout.addLayout(table_layout)
-
-        action_layout = QHBoxLayout()
-        action_layout.setContentsMargins(20, 10, 20, 10)
-        
-        self.selected_label = QLabel("Selected Item: None")
-        self.selected_label.setStyleSheet("font-weight: bold; color: #555;")
-        
-        self.status_combo = QComboBox()
-        self.status_combo.addItems(["Claimed", "Archived"])
-        self.status_combo.setEnabled(False) 
-        
-        self.update_btn = QPushButton("Update Status")
-        self.update_btn.setObjectName("btnSubmit")
-        self.update_btn.setEnabled(False) 
-
-        action_layout.addWidget(self.selected_label)
-        action_layout.addStretch() 
-        action_layout.addWidget(QLabel("Change Status To:"))
-        action_layout.addWidget(self.status_combo)
-        action_layout.addWidget(self.update_btn)
-
-        self.layout.addLayout(action_layout)
 
     def populate_categories(self, categories: List[Dict]):
         self.category_filter.clear()

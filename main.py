@@ -68,6 +68,7 @@ def main():
     except Exception:
         pass
 
+
     # ── Items Management ──────────────────────────────────────────────
     try:
         from views.items_view import ItemsView
@@ -95,13 +96,21 @@ def main():
     except Exception:
         pass
 
-    # ── Activity Log ──────────────────────────────────────────────────
+    # ── Activity Log & Archives ───────────────────────────────────────
     try:
         from views.activity_log_view import ActivityLogView
-        window.add_view("activity", ActivityLogView())
-    except Exception:
-        pass
-
+        from presenters.activity_log_presenter import ActivityLogPresenter
+        
+        activity_view = ActivityLogView()
+        activity_presenter = ActivityLogPresenter(activity_view)
+        
+        # MISSING LINE ADDED: Forces the tabs to fetch database data!
+        activity_presenter.start() 
+        
+        window.add_view("activity", activity_view)
+    except Exception as e:
+        print(f"Failed to load Activity Log view: {e}")
+        
     window.show()
     return app.exec()
 
