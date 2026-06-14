@@ -15,12 +15,7 @@ class ConstituentsView(QWidget):
 
         # Title
         title = QLabel("Constituents Management")
-        title.setStyleSheet("""
-            QLabel {
-                font-size: 25px; font-weight: bold; 
-                background-color: #b81417; color: white; padding: 15px; 
-            }
-        """)
+        title.setObjectName("viewTitle")
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
@@ -34,7 +29,7 @@ class ConstituentsView(QWidget):
             v_box = QVBoxLayout()
             v_box.setSpacing(2) 
             lbl = QLabel(label_text)
-            lbl.setStyleSheet("font-weight: bold; color: #333; margin-top: 5px;") 
+            lbl.setStyleSheet("font-weight: bold; margin-top: 5px;")
             v_box.addWidget(lbl)
             v_box.addWidget(widget)
             return v_box
@@ -82,7 +77,7 @@ class ConstituentsView(QWidget):
         self.submit_btn.setMinimumHeight(35)
         
         self.update_btn = QPushButton("Save Updated Information")
-        self.update_btn.setObjectName("btnSubmit")
+        self.update_btn.setObjectName("btnUpdate")
         self.update_btn.setMinimumHeight(35)
         self.update_btn.setStyleSheet("background-color: #d97706;") 
         self.update_btn.setVisible(False)
@@ -90,13 +85,7 @@ class ConstituentsView(QWidget):
         # POLISHED: New Delete Button
         self.delete_btn = QPushButton("Delete Constituent")
         self.delete_btn.setMinimumHeight(35)
-        self.delete_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #4b5563; /* Sleek Gray */
-                color: white; font-weight: bold; border-radius: 4px; padding: 6px 16px;
-            }
-            QPushButton:hover { background-color: #374151; }
-        """)
+        self.delete_btn.setObjectName("btnDelete")
         self.delete_btn.setVisible(False)
 
         self.clear_btn = QPushButton("Clear Form / Cancel Edit")
@@ -114,7 +103,7 @@ class ConstituentsView(QWidget):
         # Divider line
         divider = QWidget()
         divider.setFixedHeight(1)
-        divider.setStyleSheet("background-color: #cccccc; margin: 0px 20px;")
+        divider.setObjectName("divider")
         self.layout.addWidget(divider)
 
         # ==========================================
@@ -127,7 +116,6 @@ class ConstituentsView(QWidget):
         search_row = QHBoxLayout()
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search by Name or ID Number...")
-        self.search_input.setStyleSheet("padding: 6px;")
         self.search_btn = QPushButton("Search")
         self.search_btn.setObjectName("btnSubmit")
         search_row.addWidget(self.search_input)
@@ -142,13 +130,9 @@ class ConstituentsView(QWidget):
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows) 
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  
         self.table.setAlternatingRowColors(True)
-        self.table.setStyleSheet("""
-            QTableWidget { background-color: white; border: 1px solid #cccccc; }
-            QHeaderView::section { background-color: #f0f0f0; padding: 4px; font-weight: bold; }
-        """)
         
         instruction = QLabel("Click any row below to edit or delete constituent information:")
-        instruction.setStyleSheet("color: #555; font-style: italic;")
+        instruction.setStyleSheet("font-style: italic;")
         table_layout.addWidget(instruction)
         table_layout.addWidget(self.table)
 

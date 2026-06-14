@@ -14,12 +14,7 @@ class MatchesDialog(QDialog):
         self.setWindowTitle("Auto-Matching Candidates")
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
-        self.setStyleSheet("""
-            QDialog { background-color: #F9FAFB; }
-            QLabel { color: #333333; }
-            QTableWidget { background-color: white; border: 1px solid #cccccc; }
-            QHeaderView::section { background-color: #f0f0f0; padding: 6px; font-weight: bold; border: 1px solid #cccccc; }
-        """)
+        
 
         self.target_item = target_item
         self.selected_match: Optional[dict] = None

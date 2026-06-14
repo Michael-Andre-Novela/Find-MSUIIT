@@ -41,20 +41,12 @@ class DashboardView(QWidget):
         self.alert_layout.setContentsMargins(15, 10, 15, 10)
         
         self.alert_title = QLabel("⚠️ System Notifications (Unclaimed Found Items stored > 30 days):", self)
-        self.alert_title.setStyleSheet("font-weight: bold; color: #7A1C1C; font-size: 13px;")
+        self.alert_title.setStyleSheet("font-weight: bold; font-size: 13px;")
         self.alert_layout.addWidget(self.alert_title)
         
         self.alert_list_label = QLabel(self)
-        self.alert_list_label.setStyleSheet("color: #7A1C1C; font-size: 12px;")
+        self.alert_list_label.setStyleSheet("font-size: 12px;")
         self.alert_layout.addWidget(self.alert_list_label)
-
-        self.alert_frame.setStyleSheet("""
-            QFrame#alertFrame {
-                background-color: #FEE2E2; /* Light Red background */
-                border: 1px solid #FCA5A5; /* Red border */
-                border-radius: 8px;
-            }
-        """)
 
         self.main_layout.addWidget(self.alert_frame)
 
@@ -62,11 +54,11 @@ class DashboardView(QWidget):
         self.cards_row = QHBoxLayout()
         self.cards_row.setSpacing(10)
 
-        self.card_lost    = self._create_stat_card("Active Lost Items",    "#7A1C1C")
-        self.card_found   = self._create_stat_card("Active Found Items",   "#1C4F7A")
-        self.card_pending = self._create_stat_card("Pending Claims",       "#7A6A1C")
-        self.card_claimed = self._create_stat_card("Total Claimed",        "#1C7A3A")
-        self.card_unclaimed = self._create_stat_card("Unclaimed Found Items", "#4B5563")
+        self.card_lost      = self._create_stat_card("Active Lost Items")
+        self.card_found     = self._create_stat_card("Active Found Items")
+        self.card_pending   = self._create_stat_card("Pending Claims")
+        self.card_claimed   = self._create_stat_card("Total Claimed")
+        self.card_unclaimed = self._create_stat_card("Unclaimed Found Items")
 
         for card in [self.card_lost, self.card_found, self.card_pending, self.card_claimed, self.card_unclaimed]:
             self.cards_row.addWidget(card)
@@ -75,7 +67,7 @@ class DashboardView(QWidget):
 
         # ── Active items table ────────────────────────────────────────
         self.lbl_section = QLabel("Active Items", self)
-        self.lbl_section.setStyleSheet("font-size: 14px; font-weight: bold; color: #1A1A1A;")
+        self.lbl_section.setStyleSheet("font-size: 14px; font-weight: bold;")
         self.main_layout.addWidget(self.lbl_section)
 
         self.table = QTableWidget(0, 5, self)
@@ -91,7 +83,7 @@ class DashboardView(QWidget):
 
     # ── Helpers ───────────────────────────────────────────────────────
 
-    def _create_stat_card(self, title: str, color: str = "#7A1C1C") -> QFrame:
+    def _create_stat_card(self, title: str) -> QFrame:
         card = QFrame(self)
         card.setObjectName("statCard")
         card.setMinimumHeight(80)
@@ -99,11 +91,9 @@ class DashboardView(QWidget):
         layout = QVBoxLayout(card)
 
         lbl_title = QLabel(title, card)
-        lbl_title.setStyleSheet(f"font-size: 11px; font-weight: bold; color: {color};")
-
+        lbl_title.setStyleSheet("font-size: 11px; font-weight: bold;")
         lbl_value = QLabel("0", card)
-        lbl_value.setStyleSheet("font-size: 28px; font-weight: 800; color: #1A1A1A;")
-
+        lbl_value.setStyleSheet("font-size: 28px; font-weight: 800;")
         layout.addWidget(lbl_title)
         layout.addWidget(lbl_value, 0, Qt.AlignmentFlag.AlignBottom)
 

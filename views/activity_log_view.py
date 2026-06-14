@@ -15,17 +15,12 @@ class ActivityLogView(QWidget):
 
         # Main Title Header
         title = QLabel("System History & Archives")
-        title.setStyleSheet("QLabel { font-size: 25px; font-weight: bold; background-color: #111827; color: white; padding: 15px; }")
+        title.setObjectName("viewTitle")
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
         # --- CREATE SUB-TABS ---
         self.tabs = QTabWidget()
-        self.tabs.setStyleSheet("""
-            QTabWidget::pane { border: 1px solid #cccccc; background: white; }
-            QTabBar::tab { background: #f0f0f0; padding: 10px 20px; font-weight: bold; border: 1px solid #cccccc; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; }
-            QTabBar::tab:selected { background: white; color: #b81417; }
-        """)
         self.layout.addWidget(self.tabs)
 
         # ==========================================
@@ -41,10 +36,7 @@ class ActivityLogView(QWidget):
         self.combo_filter.addItems(["All Activity", "Items Registration", "Claims Processed", "System Alerts"])
 
         self.btn_export = QPushButton("Export to CSV")
-        self.btn_export.setStyleSheet("""
-            QPushButton { background-color: #10b981; color: white; font-weight: bold; padding: 6px 16px; border-radius: 4px;} 
-            QPushButton:hover { background-color: #059669; }
-        """)
+        self.btn_export.setObjectName("btnExport")
 
         self.btn_refresh_logs = QPushButton("Refresh Logs")
         self.btn_refresh_logs.setObjectName("btnSubmit")
@@ -57,7 +49,7 @@ class ActivityLogView(QWidget):
 
         self.log_display = QTextEdit()
         self.log_display.setReadOnly(True)
-        self.log_display.setStyleSheet("font-family: 'Courier New', monospace; font-size: 13px; background-color: #f9fafb; border: 1px solid #cccccc;")
+        self.log_display.setStyleSheet("font-family: 'Courier New', monospace; font-size: 13px;")
 
         logs_layout.addLayout(log_controls)
         logs_layout.addWidget(self.log_display)
@@ -73,7 +65,7 @@ class ActivityLogView(QWidget):
         archive_controls = QHBoxLayout()
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search archives by name or description...")
-        self.search_input.setStyleSheet("padding: 6px;")
+        
         
         self.type_filter = QComboBox()
         self.type_filter.addItems(["All Types", "Lost", "Found"])
@@ -83,7 +75,7 @@ class ActivityLogView(QWidget):
         
         self.search_btn = QPushButton("Search Archives")
         self.search_btn.setObjectName("btnSubmit")
-        self.search_btn.setStyleSheet("background-color: #4b5563;") # Grey for archives
+        
         self.search_btn.setFixedWidth(130)
 
         archive_controls.addWidget(self.search_input, 3)
@@ -98,22 +90,14 @@ class ActivityLogView(QWidget):
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.table.setStyleSheet("""
-            QTableWidget { background-color: white; border: 1px solid #cccccc; } 
-            QHeaderView::section { background-color: #f0f0f0; padding: 4px; font-weight: bold; }
-        """)
 
         archive_actions = QHBoxLayout()
         self.selected_label = QLabel("Selected Item: None")
-        self.selected_label.setStyleSheet("font-weight: bold; color: #555;")
+        self.selected_label.setStyleSheet("font-weight: bold;")
         
         self.restore_btn = QPushButton("Restore to Active List")
         self.restore_btn.setEnabled(False)
-        self.restore_btn.setStyleSheet("""
-            QPushButton { background-color: #d97706; color: white; font-weight: bold; padding: 6px 16px; border-radius: 4px;} 
-            QPushButton:hover:!disabled { background-color: #b45309; } 
-            QPushButton:disabled { background-color: #d1d5db; color: #9ca3af; }
-        """)
+        self.restore_btn.setObjectName("btnRestore")
 
         archive_actions.addWidget(self.selected_label)
         archive_actions.addStretch()

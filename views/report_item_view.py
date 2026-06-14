@@ -15,15 +15,7 @@ class ReportItemView(QWidget):
 
         # Title
         title = QLabel("Report Lost or Found Item")
-        title.setStyleSheet("""
-            QLabel {
-                font-size: 25px; 
-                font-weight: bold; 
-                background-color: #b81417; 
-                color: white;              
-                padding: 15px; 
-            }
-        """)
+        title.setObjectName("viewTitle")
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
@@ -38,7 +30,7 @@ class ReportItemView(QWidget):
             v_box.setSpacing(2) 
             
             lbl = QLabel(label_text)
-            lbl.setStyleSheet("font-weight: bold; color: #333; margin-top: 5px;") 
+            lbl.setStyleSheet("font-weight: bold; margin-top: 5px;") 
             
             v_box.addWidget(lbl)
             v_box.addWidget(widget)
@@ -76,19 +68,7 @@ class ReportItemView(QWidget):
         self.date_input.setDisplayFormat("yyyy-MM-dd")
         self.date_input.setDate(QDate.currentDate())
         
-        self.date_input.setStyleSheet("""
-            QDateEdit {
-                padding: 6px;
-                background-color: #FFFDE7; /* Subtle Yellow Tint */
-                color: black;
-                border: 1px solid #cccccc;
-                border-radius: 4px;
-            }
-            QDateEdit::drop-down {
-                border-left: 1px solid #cccccc;
-                width: 25px;
-            }
-        """)
+        
         
         self.location_input = QLineEdit()
         self.location_input.setPlaceholderText("e.g. Main Library, 2nd Floor")
@@ -97,10 +77,7 @@ class ReportItemView(QWidget):
         self.photo_input = QLineEdit()
         self.photo_input.setPlaceholderText("Optional image filepath...")
         self.photo_btn = QPushButton("Browse Image")
-        self.photo_btn.setStyleSheet("""
-            QPushButton { background-color: #4b5563; color: white; font-weight: bold; border-radius: 4px; padding: 6px 12px; }
-            QPushButton:hover { background-color: #374151; }
-        """)
+        self.photo_btn.setObjectName("btnSecondary")
         self.photo_btn.clicked.connect(self.handle_browse_photo)
 
         # ==========================================

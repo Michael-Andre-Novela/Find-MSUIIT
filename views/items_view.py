@@ -62,11 +62,6 @@ class EditItemDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Edit Item Details")
         self.setMinimumWidth(400)
-        self.setStyleSheet("""
-            QDialog { background-color: #F9FAFB; }
-            QLabel { font-weight: bold; color: #333; }
-            QLineEdit, QComboBox { padding: 6px; border: 1px solid #cccccc; border-radius: 4px; background-color: white; color: black; }
-        """)
 
         layout = QVBoxLayout(self)
 
@@ -140,7 +135,7 @@ class ItemsView(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 10)
 
         title = QLabel("Manage Active Items")
-        title.setStyleSheet("QLabel { font-size: 25px; font-weight: bold; background-color: #b81417; color: white; padding: 15px; }")
+        title.setObjectName("viewTitle")
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
@@ -150,21 +145,16 @@ class ItemsView(QWidget):
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search by name or description...")
-        self.search_input.setStyleSheet("padding: 6px;")
+        
         
         self.type_filter = QComboBox()
         self.type_filter.addItems(["All Types", "Lost", "Found"])
-        self.type_filter.setStyleSheet("padding: 6px; background-color: white;")
-
+        
         self.category_filter = QComboBox()
         self.category_filter.addItem("All Categories", None)
-        self.category_filter.setStyleSheet("padding: 6px; background-color: white;")
-
+        
         self.add_category_btn = QPushButton("+ New Category")
-        self.add_category_btn.setStyleSheet("""
-            QPushButton { background-color: #4b5563; color: white; font-weight: bold; border-radius: 4px; padding: 6px 12px; }
-            QPushButton:hover { background-color: #374151; }
-        """)
+        self.add_category_btn.setObjectName("btnSecondary")
 
         self.search_btn = QPushButton("Search")
         self.search_btn.setObjectName("btnSubmit") 
@@ -190,10 +180,6 @@ class ItemsView(QWidget):
         self.table.setAlternatingRowColors(True)
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
 
-        self.table.setStyleSheet("""
-            QTableWidget { background-color: white; alternate-background-color: #f9f9f9; gridline-color: #e0e0e0; border: 1px solid #cccccc; }
-            QHeaderView::section { background-color: #f0f0f0; padding: 4px; border: 1px solid #cccccc; font-weight: bold; }
-        """)
         table_layout.addWidget(self.table)
         
         # We simply add the table layout and end here. 

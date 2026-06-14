@@ -16,15 +16,7 @@ class ClaimsView(QWidget):
 
         # Title
         title = QLabel("Claims Management")
-        title.setStyleSheet("""
-            QLabel {
-                font-size: 25px; 
-                font-weight: bold; 
-                background-color: #b81417; 
-                color: white;              
-                padding: 15px; 
-            }
-        """)
+        title.setObjectName("viewTitle")                                                
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
@@ -38,7 +30,7 @@ class ClaimsView(QWidget):
             v_box = QVBoxLayout()
             v_box.setSpacing(2) 
             lbl = QLabel(label_text)
-            lbl.setStyleSheet("font-weight: bold; color: #333; margin-top: 5px;") 
+            lbl.setStyleSheet("font-weight: bold; margin-top: 5px;")
             v_box.addWidget(lbl)
             v_box.addWidget(widget)
             return v_box
@@ -63,16 +55,6 @@ class ClaimsView(QWidget):
         self.date_input.setDate(QDate.currentDate())
         self.date_input.setMinimumWidth(150)
         self.date_input.setMaximumWidth(250)
-        self.date_input.setStyleSheet("""
-            QDateEdit {
-                padding: 6px;
-                background-color: #FFFDE7;
-                color: black;
-                border: 1px solid #cccccc;
-                border-radius: 4px;
-            }
-            QDateEdit::drop-down { border-left: 1px solid #cccccc; width: 25px; }
-        """)
 
         # Compact Row Layout
         row1 = QHBoxLayout()
@@ -111,7 +93,8 @@ class ClaimsView(QWidget):
         table_layout.setContentsMargins(20, 10, 20, 0)
         
         table_label = QLabel("Pending Claims Requiring Approval:")
-        table_label.setStyleSheet("font-weight: bold; font-size: 14px; color: #b81417;")
+        table_label.setObjectName("sectionLabel")
+        table_label.setStyleSheet("font-weight: bold; font-size: 14px;")
         table_layout.addWidget(table_label)
 
         self.table = QTableWidget(0, 5) 
@@ -121,10 +104,7 @@ class ClaimsView(QWidget):
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  
         self.table.setAlternatingRowColors(True)
         
-        self.table.setStyleSheet("""
-            QTableWidget { background-color: white; border: 1px solid #cccccc; }
-            QHeaderView::section { background-color: #f0f0f0; padding: 4px; font-weight: bold; }
-        """)
+        
         table_layout.addWidget(self.table)
         
         # Action Buttons Row
@@ -133,17 +113,7 @@ class ClaimsView(QWidget):
         # POLISHED: The Reject Button
         self.reject_btn = QPushButton("Reject & Delete Claim")
         self.reject_btn.setEnabled(False)
-        self.reject_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #4b5563; /* Sleek Gray */
-                color: white;
-                font-weight: bold;
-                border-radius: 4px;
-                padding: 6px 16px;
-            }
-            QPushButton:disabled { background-color: #d1d5db; color: #9ca3af; }
-            QPushButton:hover:!disabled { background-color: #374151; }
-        """)
+        self.reject_btn.setObjectName("btnReject")
 
         self.approve_btn = QPushButton("Approve Selected Claim")
         self.approve_btn.setObjectName("btnSubmit")
