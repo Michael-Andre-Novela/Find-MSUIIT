@@ -34,23 +34,28 @@ class DashboardPresenter:
 
     def load_dashboard(self) -> None:
         """Fetches data from the model, processes counters, and updates the view."""
-        # 1. Fetch the four stat metrics from the dedicated query
+        # 1. Fetch the stat metrics from the dedicated query
         stats = self._fetch_statistics()
 
-        # 2. Push all four counters to the view's stat cards
+        # 2. Push all five counters to the view's stat cards (including unclaimed)
         self.view.update_counters(
             lost=stats["active_lost"],
             found=stats["active_found"],
             pending=stats["pending_claims"],
             claimed=stats["total_claimed"],
+            unclaimed=stats["unclaimed"],
         )
 
-        # 3. Fetch and display the active items table
+        # 3. Fetch and display the unclaimed alerts banner
+        alerts = self._fetch_alerts()
+        self.view.show_alerts(alerts)
+
+        # 4. Fetch and display the active items table
         items = self._fetch_active_items()
         self.view.show_items(items)
 
     def _fetch_statistics(self) -> Dict[str, int]:
-        """Fetches the four dashboard stat counters from the database."""
+        """Fetches the dashboard stat counters from the database."""
         if self.model and hasattr(self.model, "get_dashboard_statistics"):
             try:
                 return self.model.get_dashboard_statistics()
@@ -63,7 +68,17 @@ class DashboardPresenter:
             "active_found": 0,
             "pending_claims": 0,
             "total_claimed": 0,
+            "unclaimed": 0,
         }
+
+    def _fetch_alerts(self) -> List[Dict[str, Any]]:
+        """Fetches unclaimed found items older than 30 days for the alert banner."""
+        if self.model and hasattr(self.model, "get_unclaimed_found_items_alerts"):
+            try:
+                return self.model.get_unclaimed_found_items_alerts(days=30)
+            except Exception as e:
+                logger.error(f"Failed to fetch unclaimed alerts: {e}")
+        return []
 
     def _fetch_active_items(self) -> List[Dict[str, Any]]:
         """Internal helper to safely fetch active item records for the table."""
