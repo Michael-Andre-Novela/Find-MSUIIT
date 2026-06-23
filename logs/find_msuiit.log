@@ -3,3 +3,51 @@
 [2026-05-26 21:31:01] [DEBUG   ] [FindMSUIIT.Test] This is a DEBUG message — visible in log file only.
 [2026-05-26 21:31:01] [WARNING ] [FindMSUIIT.Test] This is a WARN message.
 [2026-05-26 21:31:01] [ERROR   ] [FindMSUIIT.Test] This is an ERROR message (no exception).
+<<<<<<< HEAD
+[2026-06-05 03:53:07] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 03:53:11] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+=======
+[2026-06-05 20:52:22] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:03:30] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:07:21] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:08:38] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:13:16] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:16:12] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 21:24:14] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 22:19:28] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-05 22:20:22] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-06 01:23:26] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-06 01:31:14] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-06 01:32:37] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-06 01:34:25] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+>>>>>>> 45b6f5e103e2e1f8d118ac68ed23aedb05634d5d
+[2026-06-06 22:07:58] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-07 02:04:24] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-07 02:15:43] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 2 pending claim(s).
+[2026-06-07 02:23:56] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 2 pending claim(s).
+[2026-06-07 02:29:26] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 2 pending claim(s).
+[2026-06-07 02:39:23] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 2 pending claim(s).
+[2026-06-07 02:43:09] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 2 pending claim(s).
+[2026-06-07 02:44:37] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Claim for item_id=4 rejected.
+[2026-06-07 02:44:39] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 1 pending claim(s).
+[2026-06-07 02:44:41] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Claim for item_id=3 rejected.
+[2026-06-07 02:44:42] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-07 02:47:42] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-07 02:52:21] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 1 pending claim(s).
+[2026-06-07 02:52:50] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Claim for item_id=2 rejected.
+[2026-06-07 02:52:51] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-07 02:53:13] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-07 02:53:25] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-07 02:55:54] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 03:08:02] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 03:08:12] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 03:08:13] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 03:16:27] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 04:05:37] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 04:07:16] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 04:10:47] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 04:10:58] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 04:16:13] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 04:21:37] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 04:30:09] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).
+[2026-06-08 18:46:14] [INFO    ] [FindMSUIIT.presenters.claims_presenter] Loaded 0 pending claim(s).

@@ -1,15 +1,14 @@
-"""Dashboard presenter: bridges `views.dashboard_view.DashboardView` and `models.queries`.
-
-It exposes a simple `start()` method that loads dashboard data and updates the view.
-"""
+"""Dashboard presenter."""
 
 from typing import Any, List, Dict
 import logging
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger(__name__), List, Dict
 try:
     from models import queries
+from modules.logger import get_logger
+
+log = get_logger(__name__)
 except ImportError:
     logger.warning("models.queries module not found. Using placeholder data engine.")
     queries = None

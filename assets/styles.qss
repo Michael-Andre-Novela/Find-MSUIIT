@@ -132,10 +132,145 @@ QPushButton#btnCancel:hover {
 
 /* --- COMBOBOX DROPDOWN LIST --- */
 QComboBox QAbstractItemView {
-    color: #374151;          
-    background-color: #FFFFFF; /* Changed from yellow to a clean, crisp white popover */
+    color: #374151;
+    background-color: #FFFFFF; /* Clean, crisp white popover */
     selection-background-color: #7A1C1C;
-    selection-color: #FFFFFF;         
+    selection-color: #FFFFFF;
     border: 1px solid #E5E7EB;        
     padding: 4px;
+}
+
+/* --- VIEW TITLE HEADERS --- */
+QLabel#viewTitle {
+    font-size: 25px;
+    font-weight: bold;
+    background-color: #7A1C1C;
+    color: #FFFFFF;
+    padding: 15px;
+}
+
+/* --- SECTION LABELS --- */
+QLabel#sectionLabel {
+    font-size: 16px;
+    font-weight: bold;
+    color: #7A1C1C;
+}
+
+/* --- CARD GROUP FRAMES --- */
+QFrame#cardGroup {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+}
+QFrame#cardGroup QLabel {
+    border: none;
+    font-weight: bold;
+}
+
+/* --- DIVIDER --- */
+QWidget#divider {
+    background-color: #E5E7EB;
+    margin: 0px 20px;
+}
+
+/* --- ALERT FRAME --- */
+QFrame#alertFrame {
+    background-color: #FEE2E2;
+    border: 1px solid #FCA5A5;
+    border-radius: 8px;
+}
+
+/* --- SECONDARY BUTTONS (gray) --- */
+QPushButton#btnSecondary {
+    background-color: #4B5563;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 6px 12px;
+}
+QPushButton#btnSecondary:hover {
+    background-color: #374151;
+}
+
+/* --- EXPORT BUTTON (green) --- */
+QPushButton#btnExport {
+    background-color: #10B981;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 6px 16px;
+}
+QPushButton#btnExport:hover {
+    background-color: #059669;
+}
+
+/* --- UPDATE BUTTON (amber) --- */
+QPushButton#btnUpdate {
+    background-color: #D97706;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 6px 16px;
+}
+QPushButton#btnUpdate:hover {
+    background-color: #B45309;
+}
+
+/* --- DELETE/REJECT BUTTONS (dark gray) --- */
+QPushButton#btnDelete, QPushButton#btnReject {
+    background-color: #4B5563;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 6px 16px;
+}
+QPushButton#btnDelete:hover:!disabled, QPushButton#btnReject:hover:!disabled {
+    background-color: #374151;
+}
+QPushButton#btnDelete:disabled, QPushButton#btnReject:disabled {
+    background-color: #D1D5DB;
+    color: #9CA3AF;
+}
+
+/* --- RESTORE BUTTON (amber) --- */
+QPushButton#btnRestore {
+    background-color: #D97706;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 6px 16px;
+}
+QPushButton#btnRestore:hover:!disabled {
+    background-color: #B45309;
+}
+QPushButton#btnRestore:disabled {
+    background-color: #D1D5DB;
+    color: #9CA3AF;
+}
+
+/* --- CREATE BUTTON (green) --- */
+QPushButton#btnCreate {
+    background-color: #10B981;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 8px 16px;
+}
+QPushButton#btnCreate:hover {
+    background-color: #059669;
+}
+
+/* --- DATE INPUT --- */
+QDateEdit {
+    background-color: #FFFDE7;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #1F2937;
+}
+
+/* --- DIALOGS --- */
+QDialog {
+    background-color: #F9FAFB;
 }
