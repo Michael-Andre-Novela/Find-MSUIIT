@@ -1,17 +1,10 @@
 """Dashboard presenter."""
 
 from typing import Any, List, Dict
-import logging
-
-logger = logging.getLogger(__name__), List, Dict
-try:
-    from models import queries
+from models import queries
 from modules.logger import get_logger
 
 log = get_logger(__name__)
-except ImportError:
-    logger.warning("models.queries module not found. Using placeholder data engine.")
-    queries = None
 
 
 class DashboardPresenter:
@@ -59,7 +52,7 @@ class DashboardPresenter:
             try:
                 return self.model.get_dashboard_statistics()
             except Exception as e:
-                logger.error(f"Failed to fetch dashboard statistics: {e}")
+                log.error(f"Failed to fetch dashboard statistics: {e}")
 
         # Fallback zeros so the UI never crashes
         return {
@@ -76,7 +69,7 @@ class DashboardPresenter:
             try:
                 return self.model.get_unclaimed_found_items_alerts(days=30)
             except Exception as e:
-                logger.error(f"Failed to fetch unclaimed alerts: {e}")
+                log.error(f"Failed to fetch unclaimed alerts: {e}")
         return []
 
     def _fetch_active_items(self) -> List[Dict[str, Any]]:
@@ -85,7 +78,7 @@ class DashboardPresenter:
             try:
                 return self.model.get_active_dashboard_items()
             except Exception as e:
-                logger.error(f"Database query layer failed: {e}")
+                log.error(f"Database query layer failed: {e}")
                 return []
 
         return []
