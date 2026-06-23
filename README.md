@@ -23,7 +23,7 @@ A desktop application for managing lost and found items at Mindanao State Univer
 
 ### Directory Structure
 
-```
+``
 find-iit/
 ├── models/
 │   ├── connection.py       # Database initialization & schema (DDL)
@@ -340,44 +340,4 @@ flake8 models/ presenters/ views/
 
 # Type checking
 mypy models/
-```
-
----
-
-## 🤝 Contributing
-
-1. Follow the MVP pattern strictly
-2. Keep views thin — no business logic in Qt code
-3. Validate inputs in presenters, not views
-4. Log significant events via `modules.logger`
-5. Test database changes with `--dry-run` first
-6. Use QSS for styling, never hardcode colors in views
-
----
-
-## 📄 License
-
-This project is for MSU-IIT internal use.
-
----
-
-## 📧 Support
-
-For issues or feature requests, contact the MSU-IIT IT Department or submit a detailed bug report with:
-- Steps to reproduce
-- Expected vs. actual behavior
-- `logs/find_msuiit.log` output
-- Database backup (if applicable)
-
----
-
-## 🔄 Version History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2026-06-24 | Initial release with core features |
-
----
-
-**Happy tracking!** 📍
 ```
