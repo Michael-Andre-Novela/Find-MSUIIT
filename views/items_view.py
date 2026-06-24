@@ -4,9 +4,118 @@ from typing import Optional, List, Dict
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QComboBox, QPushButton, QTableWidget, 
                                QTableWidgetItem, QHeaderView, QAbstractItemView, QMessageBox,
-                               QMenu, QDialog, QFormLayout, QDialogButtonBox)
+                               QMenu, QDialog, QFormLayout, QDialogButtonBox, QScrollArea)
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
 
+class ItemDetailsDialog(QDialog):
+    """Dialog to display item details with image preview."""
+    
+    def __init__(self, parent=None, item_data=None):
+        super().__init__(parent)
+        self.setWindowTitle(f"Item Details: {item_data.get('name', 'Unknown')}")
+        self.setMinimumWidth(550)
+        self.setMinimumHeight(500)
+        
+        main_layout = QVBoxLayout(self)
+        
+        # Scroll area for content
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_layout.setContentsMargins(10, 10, 10, 10)
+        scroll_layout.setSpacing(15)
+        
+        # Header - Item Name
+        title = QLabel(f"{item_data.get('name', 'N/A')}")
+        title.setWordWrap(True)
+        title.setStyleSheet("font-size: 20px; font-weight: bold; color: #7A1C1C;") # Maroon title matches theme
+        scroll_layout.addWidget(title)
+        
+        # Image Display
+        photo_filepath = item_data.get("photo_filepath")
+        if photo_filepath:
+            try:
+                import os
+                if os.path.exists(photo_filepath):
+                    pixmap = QPixmap(photo_filepath)
+                    if not pixmap.isNull():
+                        img_label = QLabel()
+                        # Scale image smoothly
+                        scaled_pixmap = pixmap.scaledToWidth(450, Qt.SmoothTransformation)
+                        img_label.setPixmap(scaled_pixmap)
+                        img_label.setAlignment(Qt.AlignCenter)
+                        img_label.setStyleSheet("border: 1px solid #D1D5DB; border-radius: 8px; padding: 4px;")
+                        scroll_layout.addWidget(img_label)
+                    else:
+                        img_label = QLabel("⚠️ Image file is corrupt or invalid.")
+                        img_label.setStyleSheet("font-style: italic;")
+                        scroll_layout.addWidget(img_label)
+                else:
+                    img_label = QLabel("📷 No image file found on disk.")
+                    img_label.setStyleSheet("font-style: italic;")
+                    scroll_layout.addWidget(img_label)
+            except Exception as e:
+                img_label = QLabel(f"⚠️ Error loading image: {e}")
+                img_label.setStyleSheet("font-style: italic;")
+                scroll_layout.addWidget(img_label)
+        else:
+            img_label = QLabel("📷 No image attached.")
+            img_label.setStyleSheet("font-style: italic;")
+            scroll_layout.addWidget(img_label)
+            
+        # Grid/Form layout for details
+        details_widget = QWidget()
+        details_layout = QFormLayout(details_widget)
+        details_layout.setSpacing(8)
+        details_layout.setLabelAlignment(Qt.AlignRight)
+        
+        def add_detail_row(label_name, value):
+            lbl = QLabel(f"<b>{label_name}:</b>")
+            val = QLabel(str(value) if value is not None and value != "" else "N/A")
+            val.setWordWrap(True)
+            details_layout.addRow(lbl, val)
+            
+        add_detail_row("Item ID", item_data.get("item_id"))
+        add_detail_row("Report Type", item_data.get("type"))
+        add_detail_row("Current Status", item_data.get("status"))
+        add_detail_row("Category", item_data.get("category_name"))
+        add_detail_row("Priority Level", item_data.get("priority_level"))
+        
+        # Details about date and location
+        event_type = "Lost" if item_data.get("type") == "Lost" else "Found"
+        add_detail_row(f"Date {event_type}", item_data.get("event_date"))
+        add_detail_row(f"Location {event_type}", item_data.get("event_location"))
+        
+        # Details about constituent
+        reporter_label = "Reporter Name" if item_data.get("type") == "Lost" else "Finder Name"
+        add_detail_row(reporter_label, item_data.get("constituent_name"))
+        add_detail_row("Constituent ID", item_data.get("constituent_id_number"))
+        
+        # Description (larger display)
+        desc_title = QLabel("<b>Description:</b>")
+        desc_val = QLabel(item_data.get("description") or "No description provided.")
+        desc_val.setWordWrap(True)
+        desc_val.setStyleSheet("font-style: italic; padding-left: 10px;")
+        details_layout.addRow(desc_title, desc_val)
+        
+        scroll_layout.addWidget(details_widget)
+        scroll.setWidget(scroll_content)
+        main_layout.addWidget(scroll)
+        
+        # Action layout buttons
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        close_btn = QPushButton("Close")
+        close_btn.setObjectName("btnCancel")
+        close_btn.setFixedWidth(100)
+        close_btn.clicked.connect(self.close)
+        btn_layout.addWidget(close_btn)
+        main_layout.addLayout(btn_layout)
 # =======================================================
 # Pop-up window for adding a Category
 # =======================================================
@@ -131,13 +240,13 @@ class EditItemDialog(QDialog):
 class ItemsView(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 10)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 10)
 
         title = QLabel("Manage Active Items")
         title.setObjectName("viewTitle")
         title.setAlignment(Qt.AlignCenter)
-        self.layout.addWidget(title)
+        self.main_layout.addWidget(title)
 
         # ── Filter / Search Bar ───────────────────────────────────────
         filter_layout = QHBoxLayout()
@@ -171,12 +280,12 @@ class ItemsView(QWidget):
         filter_layout.addWidget(self.category_filter, 2)
         filter_layout.addWidget(self.add_category_btn)
         filter_layout.addWidget(self.search_btn)
+        
+        self.main_layout.addLayout(filter_layout)
 
-        self.layout.addLayout(filter_layout)
-
-        # ── Items Table ───────────────────────────────────────────────
+        # ─── FIXED TABLE LAYOUT MANAGEMENT ─────────────────────────────────
         table_layout = QVBoxLayout()
-        table_layout.setContentsMargins(20, 10, 20, 0)
+        table_layout.setContentsMargins(20, 10, 20, 10)
 
         self.table = QTableWidget(0, 5)
         self.table.setHorizontalHeaderLabels(["Item ID", "Name", "Type", "Category", "Priority"])
@@ -187,8 +296,12 @@ class ItemsView(QWidget):
         self.table.setAlternatingRowColors(True)
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
 
+        # 1. Add the table widget DIRECTLY into our sub-layout container
         table_layout.addWidget(self.table)
-        self.layout.addLayout(table_layout)
+        
+        # 2. Append the structured sub-layout to the primary master layout wrapper
+        self.main_layout.addLayout(table_layout)
+        # ──────────────────────────────────────────────────────────────────
 
     # ── Internal helpers ──────────────────────────────────────────────
 
@@ -261,3 +374,4 @@ class ItemsView(QWidget):
                                      QMessageBox.Yes | QMessageBox.No,
                                      QMessageBox.No)
         return reply == QMessageBox.Yes
+    

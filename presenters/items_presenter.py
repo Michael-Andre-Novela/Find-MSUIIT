@@ -15,6 +15,9 @@ class ItemsPresenter:
         self.view.search_btn.clicked.connect(self.load_items)
         self.view.table.customContextMenuRequested.connect(self.handle_context_menu)
         self.view.add_category_btn.clicked.connect(self.handle_add_category)
+        
+        # Connect doubleClick signal to view detailed item dialog
+        self.view.table.doubleClicked.connect(self.handle_double_click)
 
     def start(self):
         categories = self.model.get_all_categories()
@@ -46,6 +49,7 @@ class ItemsPresenter:
             QMenu::item:selected { background-color: #f0f0f0; }
         """)
         
+        view_action = menu.addAction(f"View '{item_name}'")
         match_action = menu.addAction(f"Find Matches for '{item_name}'")
         menu.addSeparator()
         edit_action = menu.addAction(f"Edit '{item_name}'")
@@ -63,6 +67,27 @@ class ItemsPresenter:
             self.handle_archive(item_id, item_name) # Triggers the new archive method
         elif action == match_action:
             self.handle_find_matches(item_id)
+        elif action == view_action:
+            self.handle_view_item(item_id)
+
+    def handle_double_click(self, index):
+        row = index.row()
+        try:
+            item_id = int(self.view.table.item(row, 0).text())
+            self.handle_view_item(item_id)
+        except Exception as e:
+            self.view.show_message("Error", f"Could not view item details: {e}")
+
+    def handle_view_item(self, item_id):
+        # Fetch complete item details (including location, date, finder/reporter, image path)
+        item_data = self.model.get_item_details(item_id, None)
+        if not item_data:
+            self.view.show_message("Error", "Could not fetch item details from the database.")
+            return
+
+        from views.items_view import ItemDetailsDialog
+        dialog = ItemDetailsDialog(self.view, item_data)
+        dialog.exec()
 
     def handle_find_matches(self, item_id):
         item_details = self.model.get_item_details(item_id, None)
