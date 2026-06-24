@@ -9,8 +9,10 @@ their real QWidget subclasses later.
 """
 
 from typing import Dict, Optional
+from pathlib import Path # NEW
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap # NEW
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -54,6 +56,25 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.setSpacing(4)
         sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # --- ADDING THE INTERNAL LOGO ---
+        logo_label = QLabel(self._sidebar)
+        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        # Resolve the path to where LOGO.jpg is stored
+        root_dir = Path(__file__).parent.parent
+        logo_path = root_dir / "LOGO.png"
+        
+        if logo_path.exists():
+            pixmap = QPixmap(str(logo_path))
+            # Smoothly scale the logo to a maximum width of 100 pixels
+            scaled_pixmap = pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            logo_label.setPixmap(scaled_pixmap)
+            
+            # Add a little breathing room at the top
+            sidebar_layout.addSpacing(15)
+            sidebar_layout.addWidget(logo_label)
+        # --------------------------------
 
         brand_label = QLabel("Find-MSUIIT", self._sidebar)
         brand_label.setObjectName("brandLabel")

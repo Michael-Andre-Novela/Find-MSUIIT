@@ -1,7 +1,10 @@
 import sys
+import ctypes
+
 from pathlib import Path
 
 from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 
 from models.connection import initialize_db
 from models.queries import verify_database_integrity
@@ -15,11 +18,30 @@ def _load_stylesheet(path: Path):
         return None
 
 def main():
+
+    # --- WINDOWS TASKBAR FIX ---
+    # This tells Windows to treat Find-MSUIIT as a standalone app, not a Python script
+    try:
+        myappid = 'msuiit.findapp.version1.0' 
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    except Exception:
+        pass # Fails gracefully if you ever run this on Mac or Linux
+    # ---------------------------
+
     initialize_db()
     if not verify_database_integrity():
         raise RuntimeError("Database integrity check failed.")
 
     app = QApplication(sys.argv)
+
+    # --- APPLY GLOBAL APP ICON ---
+    root_path = Path(__file__).parent
+    logo_path = root_path / "LOGO.png"
+    
+    if logo_path.exists():
+        app_icon = QIcon(str(logo_path))
+        app.setWindowIcon(app_icon) # Applies to the taskbar and all popups
+    # -----------------------------
 
     # Load global stylesheet if present
     qss_path = Path(__file__).parent / "assets" / "styles.qss"
@@ -29,6 +51,10 @@ def main():
 
     window = MainWindow()
     window.setWindowTitle("FindIIT")
+
+    if logo_path.exists():
+        window.setWindowIcon(app_icon) # Applies directly to the top-left of the main window
+
     window.resize(1000, 640)
 
     # ── Dashboard ─────────────────────────────────────────────────────
