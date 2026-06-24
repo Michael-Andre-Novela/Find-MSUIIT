@@ -103,7 +103,8 @@ def populate_test_data():
                 priority_level=priority,
                 constituent_id=reporter_id,
                 date_lost=date,
-                location_lost=location
+                location_lost=location,
+                photo_filepath=None 
             )
             if success:
                 lost_count += 1
@@ -135,7 +136,8 @@ def populate_test_data():
                 priority_level=priority,
                 constituent_id=reporter_id,
                 date_found=date,
-                location_found=location
+                location_found=location,
+                photo_filepath=None 
             )
             if success:
                 found_count += 1

@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 tempCodeRunnerFile.py
 Find@IIT.md
+# Item Photos
+assets/item_photos/*
+!assets/item_photos/.gitkeep
