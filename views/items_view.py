@@ -139,61 +139,92 @@ class ItemsView(QWidget):
         title.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(title)
 
+        # ── Filter / Search Bar ───────────────────────────────────────
         filter_layout = QHBoxLayout()
         filter_layout.setContentsMargins(20, 10, 20, 0)
         filter_layout.setSpacing(10)
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Search by name or description...")
-        
-        
+        # Enter key triggers search without clicking the button
+        self.search_input.returnPressed.connect(self._emit_search)
+
         self.type_filter = QComboBox()
         self.type_filter.addItems(["All Types", "Lost", "Found"])
-        
+        # Changing type auto-triggers a new search
+        self.type_filter.currentIndexChanged.connect(self._emit_search)
+
         self.category_filter = QComboBox()
         self.category_filter.addItem("All Categories", None)
-        
+        # Changing category auto-triggers a new search
+        self.category_filter.currentIndexChanged.connect(self._emit_search)
+
         self.add_category_btn = QPushButton("+ New Category")
         self.add_category_btn.setObjectName("btnSecondary")
 
         self.search_btn = QPushButton("Search")
-        self.search_btn.setObjectName("btnSubmit") 
+        self.search_btn.setObjectName("btnSubmit")
         self.search_btn.setFixedWidth(100)
 
-        filter_layout.addWidget(self.search_input, 3) 
+        filter_layout.addWidget(self.search_input, 3)
         filter_layout.addWidget(self.type_filter, 1)
         filter_layout.addWidget(self.category_filter, 2)
         filter_layout.addWidget(self.add_category_btn)
         filter_layout.addWidget(self.search_btn)
-        
+
         self.layout.addLayout(filter_layout)
 
+        # ── Items Table ───────────────────────────────────────────────
         table_layout = QVBoxLayout()
         table_layout.setContentsMargins(20, 10, 20, 0)
 
-        self.table = QTableWidget(0, 5) 
+        self.table = QTableWidget(0, 5)
         self.table.setHorizontalHeaderLabels(["Item ID", "Name", "Type", "Category", "Priority"])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents) 
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows) 
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
 
         table_layout.addWidget(self.table)
-        
-        # We simply add the table layout and end here. 
-        # The entire bottom action bar has been cleanly removed.
         self.layout.addLayout(table_layout)
 
+    # ── Internal helpers ──────────────────────────────────────────────
+
+    def _emit_search(self):
+        """Fires search whether triggered by Enter key, button click, or filter change.
+        Routes everything through search_btn.click() so the presenter only
+        needs a single connection point."""
+        self.search_btn.click()
+
+    # ── Public interface ──────────────────────────────────────────────
+
     def populate_categories(self, categories: List[Dict]):
+        # Block signals while rebuilding the combo so we don't fire spurious searches
+        self.category_filter.blockSignals(True)
         self.category_filter.clear()
         self.category_filter.addItem("All Categories", None)
         for cat in categories:
             self.category_filter.addItem(cat["category_name"], cat["category_id"])
+        self.category_filter.blockSignals(False)
 
     def populate_table(self, items: List[Dict]):
-        self.table.setRowCount(0) 
+        self.table.setRowCount(0)
+
+        if not items:
+            # Show a friendly empty-state row that spans all columns
+            self.table.setRowCount(1)
+            empty_item = QTableWidgetItem("No items found matching your search criteria.")
+            empty_item.setTextAlignment(Qt.AlignCenter)
+            empty_item.setFlags(Qt.ItemIsEnabled)   # Not selectable / not editable
+            self.table.setItem(0, 0, empty_item)
+            self.table.setSpan(0, 0, 1, 5)
+            return
+
+        # Clear any leftover column span from a previous empty state
+        self.table.setSpan(0, 0, 1, 1)
+
         for row_idx, item in enumerate(items):
             self.table.insertRow(row_idx)
             self.table.setItem(row_idx, 0, QTableWidgetItem(str(item["item_id"])))
@@ -212,8 +243,12 @@ class ItemsView(QWidget):
         item = self.table.itemAt(position)
         if item:
             row = item.row()
-            self.table.selectRow(row) 
-            item_id = int(self.table.item(row, 0).text())
+            # Guard against the empty-state row (no valid item_id)
+            id_cell = self.table.item(row, 0)
+            if not id_cell or not id_cell.text().isdigit():
+                return None, None
+            self.table.selectRow(row)
+            item_id = int(id_cell.text())
             item_name = self.table.item(row, 1).text()
             return item_id, item_name
         return None, None
@@ -222,5 +257,7 @@ class ItemsView(QWidget):
         QMessageBox.information(self, title, message)
 
     def ask_confirmation(self, title, message):
-        reply = QMessageBox.question(self, title, message, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, title, message,
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
         return reply == QMessageBox.Yes
