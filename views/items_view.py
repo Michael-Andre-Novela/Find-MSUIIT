@@ -4,7 +4,7 @@ from typing import Optional, List, Dict
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QComboBox, QPushButton, QTableWidget, 
                                QTableWidgetItem, QHeaderView, QAbstractItemView, QMessageBox,
-                               QMenu, QDialog, QFormLayout, QDialogButtonBox, QScrollArea)
+                               QMenu, QDialog, QFormLayout, QDialogButtonBox, QScrollArea, QFileDialog)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
@@ -195,6 +195,20 @@ class EditItemDialog(QDialog):
         form_layout.addRow("Category:", self.category_combo)
         form_layout.addRow("Location:", self.location_input)
 
+        # Image Attachment field
+        photo_container = QWidget()
+        photo_layout = QHBoxLayout(photo_container)
+        photo_layout.setContentsMargins(0, 0, 0, 0)
+        self.photo_input = QLineEdit()
+        self.photo_input.setPlaceholderText("Optional image filepath...")
+        self.photo_btn = QPushButton("Browse")
+        self.photo_btn.setObjectName("btnSecondary")
+        self.photo_btn.setFixedWidth(80)
+        self.photo_btn.clicked.connect(self.handle_browse_photo)
+        photo_layout.addWidget(self.photo_input)
+        photo_layout.addWidget(self.photo_btn)
+        form_layout.addRow("Image:", photo_container)
+
         layout.addLayout(form_layout)
 
         self.btns = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
@@ -210,10 +224,16 @@ class EditItemDialog(QDialog):
 
         layout.addWidget(self.btns)
 
+    def handle_browse_photo(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select Photo", "", "Images (*.png *.jpg *.jpeg *.webp *.gif)")
+        if file_path:
+            self.photo_input.setText(file_path)
+
     def load_data(self, item_data):
         self.name_input.setText(item_data.get("name", ""))
         self.desc_input.setText(item_data.get("description", ""))
         self.location_input.setText(item_data.get("location", ""))
+        self.photo_input.setText(item_data.get("photo_filepath", ""))
 
         type_idx = self.type_combo.findText(item_data.get("type", ""))
         if type_idx >= 0:
@@ -231,7 +251,8 @@ class EditItemDialog(QDialog):
             "description": self.desc_input.text().strip(),
             "type": self.type_combo.currentText(),
             "category_id": self.category_combo.currentData(),
-            "location": self.location_input.text().strip()
+            "location": self.location_input.text().strip(),
+            "photo_filepath": self.photo_input.text().strip()
         }
 
 # =======================================================
@@ -374,4 +395,8 @@ class ItemsView(QWidget):
                                      QMessageBox.Yes | QMessageBox.No,
                                      QMessageBox.No)
         return reply == QMessageBox.Yes
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.search_btn.click()
     

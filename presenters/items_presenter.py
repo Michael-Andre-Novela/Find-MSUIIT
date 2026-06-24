@@ -160,7 +160,8 @@ class ItemsPresenter:
                 description=new_data["description"],
                 item_type=new_data["type"],
                 category_id=new_data["category_id"],
-                location=new_data["location"]
+                location=new_data["location"],
+                photo_filepath=new_data.get("photo_filepath")
             )
             
             if success:

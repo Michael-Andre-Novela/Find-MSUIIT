@@ -738,27 +738,64 @@ def get_item_by_id(item_id):
     """Fetches all details of a specific item to pre-fill the edit form."""
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM items WHERE item_id = ?", (item_id,))
+        cursor.execute("""
+            SELECT i.*, 
+                   COALESCE(l.location_lost, f.location_found) as location
+            FROM items i
+            LEFT JOIN lost l ON i.item_id = l.item_id
+            LEFT JOIN found f ON i.item_id = f.item_id
+            WHERE i.item_id = ?
+        """, (item_id,))
         row = cursor.fetchone()
         return dict(row) if row else None
 
-def update_item_details(item_id, name, description, item_type, category_id, location):
+def update_item_details(item_id, name, description, item_type, category_id, location, photo_filepath=None):
     """Updates the physical details of an item, safely handling bridge tables."""
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
-            # 1. Update main item details (NO location here)
+            # Get the current type of the item before update to handle switches safely
+            cursor.execute("SELECT type FROM items WHERE item_id = ?", (item_id,))
+            row = cursor.fetchone()
+            old_type = row["type"] if row else None
+
+            # 1. Update main item details (including photo_filepath)
             cursor.execute("""
                 UPDATE items 
-                SET name = ?, description = ?, type = ?, category_id = ?
+                SET name = ?, description = ?, type = ?, category_id = ?, photo_filepath = ?
                 WHERE item_id = ?
-            """, (name, description, item_type, category_id, item_id))
+            """, (name, description, item_type, category_id, photo_filepath, item_id))
             
             # 2. Safely update the correct bridge table for location
-            if item_type == "Lost":
-                cursor.execute("UPDATE lost SET location_lost = ? WHERE item_id = ?", (location, item_id))
-            elif item_type == "Found":
-                cursor.execute("UPDATE found SET location_found = ? WHERE item_id = ?", (location, item_id))
+            if old_type and old_type != item_type:
+                # Type has changed! We need to move the bridge record.
+                # First, find constituent_id and date from the old table
+                if old_type == "Lost":
+                    cursor.execute("SELECT constituent_id, date_lost FROM lost WHERE item_id = ?", (item_id,))
+                    bridge_row = cursor.fetchone()
+                    if bridge_row:
+                        constituent_id, date_val = bridge_row["constituent_id"], bridge_row["date_lost"]
+                        cursor.execute("DELETE FROM lost WHERE item_id = ?", (item_id,))
+                        cursor.execute("""
+                            INSERT INTO found (item_id, constituent_id, date_found, location_found)
+                            VALUES (?, ?, ?, ?)
+                        """, (item_id, constituent_id, date_val, location))
+                else:
+                    cursor.execute("SELECT constituent_id, date_found FROM found WHERE item_id = ?", (item_id,))
+                    bridge_row = cursor.fetchone()
+                    if bridge_row:
+                        constituent_id, date_val = bridge_row["constituent_id"], bridge_row["date_found"]
+                        cursor.execute("DELETE FROM found WHERE item_id = ?", (item_id,))
+                        cursor.execute("""
+                            INSERT INTO lost (item_id, constituent_id, date_lost, location_lost)
+                            VALUES (?, ?, ?, ?)
+                        """, (item_id, constituent_id, date_val, location))
+            else:
+                # Type did not change, just update the location in the corresponding table
+                if item_type == "Lost":
+                    cursor.execute("UPDATE lost SET location_lost = ? WHERE item_id = ?", (location, item_id))
+                elif item_type == "Found":
+                    cursor.execute("UPDATE found SET location_found = ? WHERE item_id = ?", (location, item_id))
                 
             conn.commit()
             return True

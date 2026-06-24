@@ -5,3 +5,5 @@ Find@IIT.md
 # Item Photos
 assets/item_photos/*
 !assets/item_photos/.gitkeep
+
+database/sql_queries_reference.md

@@ -156,3 +156,75 @@
 [2026-06-24 22:17:01] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
 [2026-06-24 22:17:01] [INFO    ] [FindMSUIIT.modules.matching] Matching complete for item_id=30 — 0 candidate(s) found above threshold 0.45.
 [2026-06-24 22:17:01] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  find_matches_for_item()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering find_matches_for_item()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Books & Stationery) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Books & Stationery) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Match score: name=0.62 desc=0.00 cat=1.00 → composite=0.4980
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Wallets & Bags) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Personal Items (Tumblers, Umbrellas)) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Books & Stationery) — score forced to 0.0
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:49] [INFO    ] [FindMSUIIT.modules.matching] Matching complete for item_id=28 — 1 candidate(s) found above threshold 0.45.
+[2026-06-24 22:30:49] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  find_matches_for_item()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering find_matches_for_item()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Books & Stationery) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Books & Stationery) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Match score: name=0.62 desc=0.00 cat=1.00 → composite=0.4980
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Wallets & Bags) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Clothing & Accessories) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Personal Items (Tumblers, Umbrellas)) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] → Entering compute_match_score()
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.modules.matching] Category mismatch (Electronics ≠ Books & Stationery) — score forced to 0.0
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  compute_match_score()
+[2026-06-24 22:30:57] [INFO    ] [FindMSUIIT.modules.matching] Matching complete for item_id=28 — 1 candidate(s) found above threshold 0.45.
+[2026-06-24 22:30:57] [DEBUG   ] [FindMSUIIT.Trace] ← Exiting  find_matches_for_item()
