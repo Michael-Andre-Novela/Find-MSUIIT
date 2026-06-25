@@ -237,8 +237,8 @@ def create_claim_request(item_id, constituent_id, claim_date):
 			print(msg)
 			return False, msg
 
-def add_category(category_name, description=""):
-    """Adds a new item category to the system."""
+def add_category(category_name):
+    """Adds a new item category to the system (description removed to fix DB error)."""
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
@@ -247,11 +247,11 @@ def add_category(category_name, description=""):
             if cursor.fetchone():
                 return "duplicate"
                 
-            # 2. Insert the new category
+            # 2. Insert the new category (NO description column used)
             cursor.execute("""
-                INSERT INTO categories (category_name, description)
-                VALUES (?, ?)
-            """, (category_name, description))
+                INSERT INTO categories (category_name)
+                VALUES (?)
+            """, (category_name,))
             
             # 3. Log the system change
             action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -264,6 +264,33 @@ def add_category(category_name, description=""):
             return True
         except sqlite3.Error as e:
             print(f"Failed to add category: {e}")
+            return False
+
+def delete_category(category_id):
+    """Attempts to delete a category. Blocked if tied to active/archived items."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            # Protect the internal system placeholder category (ID 1)
+            if category_id == 1:
+                return "system_protected"
+
+            cursor.execute("DELETE FROM categories WHERE category_id = ?", (category_id,))
+            
+            # Log the deletion
+            action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            cursor.execute("""
+                INSERT INTO activity_log (item_id, details, actions, action_date)
+                VALUES (0, ?, 'System Alert', ?)
+            """, (f"Category ID {category_id} was deleted by admin", action_date))
+
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            # Triggers if the DB blocks deletion because items are still using this category
+            return "restricted"
+        except sqlite3.Error as e:
+            print(f"Failed to delete category: {e}")
             return False
 
 # =====================================================================
