@@ -299,11 +299,15 @@ class ItemsView(QWidget):
         self.search_btn.setObjectName("btnSubmit")
         self.search_btn.setFixedWidth(100)
 
-        filter_layout.addWidget(self.search_input, 3)
-        filter_layout.addWidget(self.type_filter, 1)
-        filter_layout.addWidget(self.category_filter, 2)
+        # Force the search bar to never shrink smaller than 250 pixels
+        self.search_input.setMinimumWidth(250)
+
+        # By giving ONLY the search input a stretch factor (1), it will dynamically fill all empty space!
+        filter_layout.addWidget(self.search_input, 1) 
+        filter_layout.addWidget(self.type_filter)     # Dropdowns now only take the space they need
+        filter_layout.addWidget(self.category_filter) 
         filter_layout.addWidget(self.add_category_btn)
-        filter_layout.addWidget(self.delete_category_btn) # Placed right next to the add button
+        filter_layout.addWidget(self.delete_category_btn)
         filter_layout.addWidget(self.search_btn)
         
         self.main_layout.addLayout(filter_layout)

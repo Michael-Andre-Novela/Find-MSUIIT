@@ -267,17 +267,26 @@ def add_category(category_name):
             return False
 
 def delete_category(category_id):
-    """Attempts to delete a category. Blocked if tied to active/archived items."""
+    """Attempts to delete a category. Explicitly blocked if tied to active/archived items."""
     with get_connection() as conn:
         cursor = conn.cursor()
         try:
-            # Protect the internal system placeholder category (ID 1)
+            # 1. Protect the internal system placeholder category (ID 1)
             if category_id == 1:
                 return "system_protected"
 
+            # 2. EXPLICIT SECURITY CHECK: Are there any items using this category?
+            cursor.execute("SELECT COUNT(*) FROM items WHERE category_id = ?", (category_id,))
+            item_count = cursor.fetchone()[0]
+            
+            if item_count > 0:
+                # Returns 'restricted' which triggers the popup warning in your presenter
+                return "restricted" 
+
+            # 3. If no items are using it, proceed with deletion
             cursor.execute("DELETE FROM categories WHERE category_id = ?", (category_id,))
             
-            # Log the deletion
+            # 4. Log the deletion in the system history
             action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
             cursor.execute("""
                 INSERT INTO activity_log (item_id, details, actions, action_date)
@@ -286,8 +295,9 @@ def delete_category(category_id):
 
             conn.commit()
             return True
+            
         except sqlite3.IntegrityError:
-            # Triggers if the DB blocks deletion because items are still using this category
+            # Fallback just in case the database engine catches something else
             return "restricted"
         except sqlite3.Error as e:
             print(f"Failed to delete category: {e}")
