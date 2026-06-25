@@ -668,6 +668,7 @@ def optimize_database():
 			print(f"Failed to optimize database: {e}")
 
 			return False
+
 def add_activity_log(item_id: int, details: str, actions: str) -> bool:
     """Helper function to cleanly insert tracking events into the activity log."""
     action_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -859,4 +860,4 @@ def purge_archived_item(item_id):
         except sqlite3.Error as e:
             conn.rollback()
             print(f"Failed to purge archived item: {e}")
-            return False		
+            return False
