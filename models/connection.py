@@ -21,7 +21,8 @@ def initialize_db():
 
 	cursor.execute("""CREATE TABLE IF NOT EXISTS categories(
 		       category_id INTEGER PRIMARY KEY AUTOINCREMENT,
-		       category_name TEXT NOT NULL UNIQUE
+		       category_name TEXT NOT NULL UNIQUE,
+		       description TEXT DEFAULT ''
 		       );
 		    """)
 	#Creating the Constituents tables
@@ -95,16 +96,16 @@ def initialize_db():
 #SEED DATA FOR POPULATING THE CATEGORIES TABLE
 
 	default_categories = [
-	    ('Electronics',),
-	    ('Documents & Cards',),
-	    ('Keys & Keychains',),
-	    ('Wallets & Bags',),
-	    ('Books & Stationery',),
-	    ('Clothing & Accessories',),
-	    ('Personal Items (Tumblers, Umbrellas)',)
+	    ('Electronics', ''),
+	    ('Documents & Cards', ''),
+	    ('Keys & Keychains', ''),
+	    ('Wallets & Bags', ''),
+	    ('Books & Stationery', ''),
+	    ('Clothing & Accessories', ''),
+	    ('Personal Items (Tumblers, Umbrellas)', '')
 	]
 
-	cursor.executemany("""INSERT OR IGNORE INTO categories (category_name) VALUES (?);""", 
+	cursor.executemany("""INSERT OR IGNORE INTO categories (category_name, description) VALUES (?, ?);""", 
 			   default_categories)
 
 	def ensure_constituent(id_number, name, contact_email, contact_phone=None):
