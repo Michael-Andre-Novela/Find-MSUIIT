@@ -16,7 +16,9 @@ class ItemsPresenter:
         self.view.table.customContextMenuRequested.connect(self.handle_context_menu)
         self.view.add_category_btn.clicked.connect(self.handle_add_category)
         
-        # Connect doubleClick signal to view detailed item dialog
+        # NEW: Connect the delete category button
+        self.view.delete_category_btn.clicked.connect(self.handle_delete_category)
+        
         self.view.table.doubleClicked.connect(self.handle_double_click)
 
     def start(self):
@@ -191,7 +193,7 @@ class ItemsPresenter:
                 self.view.show_message("Validation Error", "Category Name cannot be empty.")
                 return
                 
-            result = self.model.add_category(data["name"], data["description"])
+            result = self.model.add_category(data["name"]) # Description removed!
             
             if result == True:
                 self.view.show_message("Success", f"Category '{data['name']}' was successfully added to the system!")
@@ -201,3 +203,31 @@ class ItemsPresenter:
                 self.view.show_message("Error", f"The category '{data['name']}' already exists.")
             else:
                 self.view.show_message("Database Error", "Failed to save the new category.")
+
+    def handle_delete_category(self):
+        """Attempts to delete the currently selected category in the dropdown filter."""
+        category_id = self.view.category_filter.currentData()
+        category_name = self.view.category_filter.currentText()
+
+        # If they left it on "All Categories", they haven't selected a specific one to delete
+        if not category_id:
+            self.view.show_message("Selection Error", "Please select a specific category from the dropdown to delete. ('All Categories' cannot be deleted).")
+            return
+
+        if self.view.ask_confirmation("Confirm Category Deletion", f"Are you sure you want to completely delete the '{category_name}' category?\n\nThis will only work if no items are currently using it."):
+            
+            result = self.model.delete_category(category_id)
+            
+            if result == True:
+                self.view.show_message("Success", f"Category '{category_name}' has been deleted.")
+                categories = self.model.get_all_categories()
+                self.view.populate_categories(categories)
+                self.load_items()
+                
+            elif result == "restricted":
+                self.view.show_message("Deletion Blocked", f"Cannot delete '{category_name}'.\n\nThere are still items tied to this category. You must move or delete those items first.")
+            elif result == "system_protected":
+                self.view.show_message("Deletion Blocked", "The default 'System Unassigned' category is protected and cannot be deleted.")
+            else:
+                self.view.show_message("Database Error", "Failed to delete the category.")
+                

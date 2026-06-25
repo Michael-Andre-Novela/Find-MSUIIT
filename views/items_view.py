@@ -136,12 +136,8 @@ class AddCategoryDialog(QDialog):
         
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("e.g. Tumblers, Umbrellas...")
-        
-        self.desc_input = QLineEdit()
-        self.desc_input.setPlaceholderText("Optional description")
 
         form_layout.addRow("Category Name:", self.name_input)
-        form_layout.addRow("Description:", self.desc_input)
         layout.addLayout(form_layout)
 
         self.btns = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
@@ -159,8 +155,7 @@ class AddCategoryDialog(QDialog):
 
     def get_data(self):
         return {
-            "name": self.name_input.text().strip(),
-            "description": self.desc_input.text().strip()
+            "name": self.name_input.text().strip()
         }
 
 # =======================================================
@@ -292,6 +287,14 @@ class ItemsView(QWidget):
         self.add_category_btn = QPushButton("+ New Category")
         self.add_category_btn.setObjectName("btnSecondary")
 
+        # --- NEW: Delete Category Button ---
+        self.delete_category_btn = QPushButton("- Delete Category")
+        self.delete_category_btn.setStyleSheet("""
+            QPushButton { background-color: #ef4444; color: white; font-weight: bold; border-radius: 4px; padding: 6px 12px; }
+            QPushButton:hover { background-color: #dc2626; }
+        """)
+        # -----------------------------------
+
         self.search_btn = QPushButton("Search")
         self.search_btn.setObjectName("btnSubmit")
         self.search_btn.setFixedWidth(100)
@@ -300,6 +303,7 @@ class ItemsView(QWidget):
         filter_layout.addWidget(self.type_filter, 1)
         filter_layout.addWidget(self.category_filter, 2)
         filter_layout.addWidget(self.add_category_btn)
+        filter_layout.addWidget(self.delete_category_btn) # Placed right next to the add button
         filter_layout.addWidget(self.search_btn)
         
         self.main_layout.addLayout(filter_layout)
